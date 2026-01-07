@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+            colors: {
+              brand: {
+                DEFAULT: '#16367B',
+                light: '#2a4ea3',
+                dark: '#0f265a',
+              }
+            },
+            boxShadow: {
+              'card': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+              'input': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+            }
+          }
+        }
+      }
+    </script>
+    
+    <style>
+      body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      
+      .loader {
+        border: 3px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 3px solid #16367B;
+        width: 24px;
+        height: 24px;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      .checkbox-container::-webkit-scrollbar {
+        width: 6px;
+      }
+      
+      .checkbox-container::-webkit-scrollbar-track {
+        background: #f8fafc;
+        border-radius: 4px;
+      }
+      
+      .checkbox-container::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+      }
+      
+      /* Dark mode styles */
+      .dark input:not([type="checkbox"]):not([type="file"]),
+      .dark textarea,
+      .dark select {
+        background-color: #374151 !important;
+        border-color: #4b5563 !important;
+        color: #f3f4f6 !important;
+      }
+      
+      .dark input:not([type="checkbox"]):not([type="file"])::placeholder,
+      .dark textarea::placeholder {
+        color: #9ca3af !important;
+      }
+      
+      .dark input:not([type="checkbox"]):not([type="file"]):focus,
+      .dark textarea:focus,
+      .dark select:focus {
+        background-color: #4b5563 !important;
+      }
+      
+      .dark label {
+        color: #d1d5db !important;
+      }
+      
+      .dark h2, .dark h3 {
+        color: #f3f4f6 !important;
+      }
+      
+      /* Enhanced visibility for logo and icons in dark mode */
+      .dark nav img {
+        filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3)) 
+                drop-shadow(0 2px 4px rgba(255, 255, 255, 0.2));
+      }
+      
+      .dark .bg-brand\/10 {
+        background-color: rgba(41, 94, 227, 0.2) !important;
+        box-shadow: 0 0 0 1px rgba(41, 94, 227, 0.3),
+                    0 0 12px rgba(41, 94, 227, 0.2);
+      }
+      
+      .dark .text-brand {
+        filter: drop-shadow(0 0 4px rgba(41, 94, 227, 0.5));
+        color: #5b8def !important;
+      }
+      
+      .dark .checkbox-container {
+        background-color: #374151 !important;
+        border-color: #4b5563 !important;
+      }
+      
+      .dark .teacher-row {
+        background-color: #374151 !important;
+        border-color: #4b5563 !important;
+      }
+      
+      .dark .text-gray-500 {
+        color: #9ca3af !important;
+      }
+      
+      .dark .text-gray-600 {
+        color: #d1d5db !important;
+      }
+      
+      .dark .text-gray-700 {
+        color: #e5e7eb !important;
+      }
+      
+      .dark .bg-gray-50 {
+        background-color: #374151 !important;
+      }
+      
+      .dark .bg-gray-100 {
+        background-color: #4b5563 !important;
+      }
+      
+      .dark .border-gray-200 {
+        border-color: #4b5563 !important;
+      }
+      
+      .dark .border-gray-300 {
+        border-color: #6b7280 !important;
+      }
+      
+      .checkbox-container::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+    </style>
+  </head>
+  
+  <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 font-sans min-h-screen flex flex-col transition-colors duration-200">
+
+    <!-- Navbar -->
+    <nav class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-100 dark:border-gray-700 sticky top-0 z-50">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-20">
+          <div class="flex-shrink-0 flex items-center">
+            <img class="h-12 w-auto object-contain" src="https://kreyco.s3.us-east-2.amazonaws.com/kreyco-logo.png" alt="Kreyco">
+          </div>
+          <div class="flex items-center gap-4">
+            <!-- Theme Toggle -->
+            <div class="relative">
+              <button id="themeToggle" class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors" aria-label="Toggle theme">
+                <svg id="themeIconLight" class="w-5 h-5 text-gray-700 hidden" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/>
+                </svg>
+                <svg id="themeIconDark" class="w-5 h-5 text-gray-700 dark:text-gray-300 hidden" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+                </svg>
+                <svg id="themeIconSystem" class="w-5 h-5 text-gray-700 dark:text-gray-300 hidden" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z" clip-rule="evenodd"/>
+                </svg>
+              </button>
+              
+              <!-- Theme Dropdown -->
+              <div id="themeDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
+                <button data-theme="light" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/>
+                  </svg>
+                  Light
+                </button>
+                <button data-theme="dark" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+                  </svg>
+                  Dark
+                </button>
+                <button data-theme="system" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z" clip-rule="evenodd"/>
+                  </svg>
+                  System
+                </button>
+              </div>
+            </div>
+            
+            <a href="https://www.kreyco.com" target="_blank" class="text-sm font-medium text-gray-500 hover:text-brand transition-colors hidden sm:block">www.kreyco.com</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow py-8 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-4xl mx-auto">
+        
+        <!-- Header -->
+        <div class="text-center mb-6">
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight sm:text-3xl">Partnership Inquiry</h1>
+        </div>
+
+        <!-- Form Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-card overflow-hidden border border-gray-100 dark:border-gray-700">
+          <form id="appForm" class="p-8 sm:p-12 space-y-10">
+            
+            <!-- Section 1: School Details -->
+            <section>
+              <div class="flex items-center mb-6">
+                <div class="bg-brand/10 p-2 rounded-lg mr-3">
+                  <i class="fas fa-school text-brand text-xl"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-900">School Information</h2>
+              </div>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-semibold text-gray-700 mb-1">Name of School <span class="text-red-500">*</span></label>
+                  <input type="text" id="schoolName" required class="w-full rounded-lg border-gray-300 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand focus:border-transparent transition-all shadow-input p-2.5">
+                </div>
+
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-semibold text-gray-700 mb-1">Address (Street, City, State, ZIP) <span class="text-red-500">*</span></label>
+                  <textarea id="address" rows="2" placeholder="Please add the complete address" required class="w-full rounded-lg border-gray-300 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand focus:border-transparent transition-all shadow-input p-2.5"></textarea>
+                  <p class="text-xs text-red-500 mt-1 hidden" id="addressError">Please enter a complete address (minimum 10 characters).</p>
+                </div>
+                
+                <div class="md:col-span-2 grid grid-cols-3 gap-4">
+                  <div class="col-span-1">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Title</label>
+                    <input type="text" id="title" placeholder="e.g., Principal" class="w-full rounded-lg border-gray-300 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand focus:border-transparent transition-all shadow-input p-2.5">
+                  </div>
+                  
+                  <div class="col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Your Full Name (First and Last Name) <span class="text-red-500">*</span></label>
+                    <input type="text" id="fullName" required class="w-full rounded-lg border-gray-300 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand focus:border-transparent transition-all shadow-input p-2.5">
+                  </div>
+                </div>
+
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-semibold text-gray-700 mb-1">Email Address <span class="text-red-500">*</span></label>
+                  <input type="email" id="email" required class="w-full rounded-lg border-gray-300 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand focus:border-transparent transition-all shadow-input p-2.5">
+                  <p class="text-xs text-red-500 mt-1 hidden" id="emailError">Please enter a valid email address.</p>
+                </div>
+              </div>
+            </section>
+
+            <hr class="border-gray-100">
+
+            <!-- Section 2: Schedule & Contract -->
+            <section>
+              <div class="flex items-center mb-6">
+                <div class="bg-brand/10 p-2 rounded-lg mr-3">
+                  <i class="fas fa-calendar-alt text-brand text-xl"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-900">Schedule & Contract Details</h2>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="col-span-1">
+                  <label class="block text-sm font-semibold text-gray-700 mb-1">School Calendar <span class="text-red-500">*</span></label>
+                  <div class="relative">
+                    <input type="file" id="calendar" required accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" class="hidden">
+                    <button type="button" onclick="document.getElementById('calendar').click()" class="w-full rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100 focus:ring-2 focus:ring-brand focus:border-transparent transition-all p-3 text-left flex items-center">
+                      <i class="fas fa-upload text-gray-400 mr-3"></i>
+                      <span class="text-sm text-gray-600">Click to upload School Calendar</span>
+                    </button>
+                    <p class="text-xs text-gray-500 mt-1" data-calendar-label>No file chosen</p>
+                  </div>
+                </div>
+                
+                <div class="col-span-1">
+                  <label class="block text-sm font-semibold text-gray-700 mb-1">Teacher/Instructional Days <span class="text-red-500">*</span></label>
+                  <textarea id="teacherDays" rows="2" required class="w-full rounded-lg border-gray-300 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand focus:border-transparent transition-all shadow-input p-2.5"></textarea>
+                </div>
+                
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-semibold text-gray-700 mb-1">Duties, Meetings, & PD <span class="text-red-500">*</span></label>
+                  <textarea id="duties" rows="2" required class="w-full rounded-lg border-gray-300 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand focus:border-transparent transition-all shadow-input p-2.5"></textarea>
+                </div>
+                
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-semibold text-gray-700 mb-1">Salary & Benefits <span class="text-red-500">*</span></label>
+                  <textarea id="salary" rows="3" required class="w-full rounded-lg border-gray-300 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand focus:border-transparent transition-all shadow-input p-2.5"></textarea>
+                </div>
+                
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-semibold text-gray-700 mb-1">Should we know anything else?</label>
+                  <textarea id="additionalInfo" rows="2" class="w-full rounded-lg border-gray-300 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand focus:border-transparent transition-all shadow-input p-2.5"></textarea>
+                </div>
+              </div>
+            </section>
+
+            <hr class="border-gray-100">
+
+            <!-- Section 3: Teachers -->
+            <section>
+              <!-- Highlighted Description -->
+              <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-brand p-4 mb-6 rounded-r-lg">
+                <p class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+                  <i class="fas fa-info-circle text-brand mr-2"></i>
+                  <strong>Below, please add the information for each individual teacher you need.</strong> Click the "Add Teacher" button to add a new space for each individual teacher.
+                </p>
+              </div>
+              
+              <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
+                <div class="flex items-center">
+                  <div class="bg-brand/10 p-2 rounded-lg mr-3">
+                    <i class="fas fa-users text-brand text-xl"></i>
+                  </div>
+                  <div>
+                    <h2 class="text-xl font-bold text-gray-900">Number of Teachers</h2>
+                    <p id="teacherCounter" class="text-sm text-gray-500 mt-0.5">Total added: 1</p>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                  <label class="flex items-center space-x-2 cursor-pointer bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
+                    <input type="checkbox" id="tbdCheckbox" class="w-4 h-4 text-brand rounded focus:ring-brand">
+                    <span class="text-sm font-medium text-gray-700">TBD</span>
+                  </label>
+
+                  <button type="button" id="addTeacherBtn" onclick="addTeacherRow()" class="bg-white border border-brand text-brand hover:bg-brand hover:text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center shadow-sm">
+                    <i class="fas fa-plus mr-2"></i> Add Teacher
+                  </button>
+                </div>
+              </div>
+              
+              <div id="tbdContainer" class="hidden mb-6">
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Description <span class="text-red-500">*</span></label>
+                <textarea id="tbdDescription" rows="3" class="w-full rounded-lg border-gray-300 bg-white focus:ring-2 focus:ring-brand focus:border-transparent transition-all shadow-input p-2.5" placeholder="Please describe the staffing needs..."></textarea>
+              </div>
+
+              <div id="teachersContainer" class="space-y-6"></div>
+              
+              <!-- Bottom Add Teacher Button -->
+              <div id="addTeacherBtnBottom" class="mt-6 flex justify-center">
+                <button type="button" onclick="addTeacherRow()" class="bg-white border-2 border-brand text-brand hover:bg-brand hover:text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center shadow-sm hover:shadow-md">
+                  <i class="fas fa-plus mr-2"></i> Add Another Teacher
+                </button>
+              </div>
+            </section>
+
+            <!-- Submit Button -->
+            <div class="pt-6">
+              <button type="submit" id="submitBtn" class="w-full bg-brand hover:bg-brand-dark text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 flex justify-center items-center text-lg">
+                <span>Submit Response</span>
+              </button>
+              <div id="statusMessage" class="hidden mt-6 p-4 rounded-lg text-center font-medium border"></div>
+            </div>
+
+          </form>
+        </div>
+        
+        <!-- Footer -->
+        <div class="mt-8 text-center text-gray-400 text-sm pb-8">
+          &copy; <script>document.write(new Date().getFullYear())</script> Kreyco. All rights reserved.
+        </div>
+      </div>
+    </main>
+
+    <!-- Teacher Row Template -->
+    <template id="teacherTemplate">
+      <div class="teacher-row bg-gray-50 border border-gray-200 p-6 rounded-xl relative hover:shadow-md transition-shadow duration-200">
+        <button type="button" onclick="removeTeacher(this)" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors p-2 rounded-full hover:bg-red-50" title="Remove Teacher">
+          <i class="fas fa-trash-alt"></i>
+        </button>
+        
+        <h3 class="text-brand font-bold text-lg mb-4 teacher-header">Teacher 1</h3>
+        
+        <div class="grid grid-cols-1 gap-5">
+          <div>
+            <label class="block text-xs uppercase tracking-wide font-bold text-gray-500 mb-1">Description</label>
+            <textarea name="t_desc" rows="2" class="w-full rounded-md border-gray-300 focus:ring-brand focus:border-brand shadow-sm p-2" placeholder="Role description or requirements"></textarea>
+          </div>
+          
+          <div>
+            <label class="block text-xs uppercase tracking-wide font-bold text-gray-500 mb-1">Teaching Schedule <span class="text-red-500">*</span></label>
+            <textarea name="t_teachingSchedule" rows="2" class="w-full rounded-md border-gray-300 focus:ring-brand focus:border-brand shadow-sm p-2" placeholder="Please describe the teaching schedule..." required></textarea>
+          </div>
+          
+          <!-- Dropdowns in 3 columns for first 3, then REG Services full width -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Grade Levels Checkboxes -->
+            <div>
+              <label class="block text-xs uppercase tracking-wide font-bold text-gray-500 mb-1">Grade Level(s) <span class="text-red-500">*</span></label>
+              <div name="t_gradeLevels" class="checkbox-container bg-white border border-gray-300 rounded-md p-3 h-40 overflow-y-auto">
+                <div class="flex justify-center items-center h-full text-gray-400 text-sm"><div class="loader"></div></div>
+              </div>
+            </div>
+            
+            <!-- LLN Services Checkboxes -->
+            <div>
+              <label class="block text-xs uppercase tracking-wide font-bold text-gray-500 mb-1">LLN Services <span class="text-red-500">*</span></label>
+              <div name="t_llnServices" class="checkbox-container bg-white border border-gray-300 rounded-md p-3 h-40 overflow-y-auto">
+                <div class="flex justify-center items-center h-full text-gray-400 text-sm"><div class="loader"></div></div>
+              </div>
+            </div>
+            
+            <!-- Languages Checkboxes -->
+            <div>
+              <label class="block text-xs uppercase tracking-wide font-bold text-gray-500 mb-1">Language(s) <span class="text-red-500">*</span></label>
+              <div name="t_languages" class="checkbox-container bg-white border border-gray-300 rounded-md p-3 h-40 overflow-y-auto">
+                <div class="flex justify-center items-center h-full text-gray-400 text-sm"><div class="loader"></div></div>
+              </div>
+            </div>
+            
+            <!-- REG Services Checkboxes - Full Width Due to Long Text -->
+            <div class="md:col-span-3">
+              <label class="block text-xs uppercase tracking-wide font-bold text-gray-500 mb-1">REG Services (English) <span class="text-red-500">*</span></label>
+              <div name="t_regServices" class="checkbox-container bg-white border border-gray-300 rounded-md p-3 h-40 overflow-y-auto">
+                <div class="flex justify-center items-center h-full text-gray-400 text-sm"><div class="loader"></div></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Status Dropdowns (Certification and Modality) -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs uppercase tracking-wide font-bold text-gray-500 mb-1">Certification <span class="text-red-500">*</span></label>
+              <select name="t_certification" required class="w-full rounded-md border-gray-300 bg-white focus:ring-brand focus:border-brand shadow-sm p-2">
+                <option value="">Select Certification...</option>
+                <option disabled>Loading...</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-xs uppercase tracking-wide font-bold text-gray-500 mb-1">Modality Preference <span class="text-red-500">*</span></label>
+              <select name="t_modality" required class="w-full rounded-md border-gray-300 bg-white focus:ring-brand focus:border-brand shadow-sm p-2">
+                <option value="">Select Modality...</option>
+                <option disabled>Loading...</option>
+              </select>
+            </div>
+          </div>
+          
+          <!-- Desired Start Date and Last Day -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs uppercase tracking-wide font-bold text-gray-500 mb-1">Desired Start Date <span class="text-red-500">*</span></label>
+              <textarea name="t_startDate" rows="2" class="w-full rounded-md border-gray-300 focus:ring-brand focus:border-brand shadow-sm p-2" placeholder="Enter desired start date..." required></textarea>
+            </div>
+            
+            <div>
+              <label class="block text-xs uppercase tracking-wide font-bold text-gray-500 mb-1">Last Day of Instruction <span class="text-red-500">*</span></label>
+              <textarea name="t_lastDay" rows="2" class="w-full rounded-md border-gray-300 focus:ring-brand focus:border-brand shadow-sm p-2" placeholder="Enter last day of instruction..." required></textarea>
+            </div>
+          </div>
+          
+          <div>
+            <label class="block text-xs uppercase tracking-wide font-bold text-gray-500 mb-1">Upload File</label>
+            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md bg-white hover:bg-gray-50 transition-colors relative">
+              <div class="space-y-1 text-center">
+                <i class="fas fa-cloud-upload-alt text-gray-400 text-3xl mb-2"></i>
+                <div class="flex text-sm text-gray-600 justify-center">
+                  <label class="relative cursor-pointer bg-white rounded-md font-medium text-brand hover:text-brand-dark focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-brand">
+                    <span>Upload a file</span>
+                    <input type="file" name="t_file" class="sr-only" onchange="updateFileName(this)">
+                  </label>
+                </div>
+                <p class="text-xs text-gray-500" data-file-label>No file chosen</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <script>
+      // Mock google.script.run for local testing
+      if (typeof google === 'undefined') {
+        console.warn("Running outside Google Apps Script. Mocking server calls.");
+        window.google = {
+          script: {
+            run: {
+              withSuccessHandler: function(success) {
+                return {
+                  withFailureHandler: function(failure) {
+                    return {
+                      getBoardDropdownOptions: function() {
+                        setTimeout(() => {
+                          success({
+                            'dropdown_mkt6esvc': {
+                              title: 'Grade Levels',
+                              type: 'dropdown',
+                              labels: [{name: 'Grade 1'}, {name: 'Grade 2'}, {name: 'Grade 3'}]
+                            },
+                            'dropdown_mkt67ese': {
+                              title: 'LLN Services',
+                              type: 'dropdown',
+                              labels: [{name: 'Special Education'}, {name: 'Speech Therapy'}]
+                            },
+                            'dropdown_mkt6gc13': {
+                              title: 'REG Services',
+                              type: 'dropdown',
+                              labels: [{name: 'Math Support'}, {name: 'Reading Intervention'}]
+                            },
+                            'dropdown_mkt641g1': {
+                              title: 'Languages',
+                              type: 'dropdown',
+                              labels: [{name: 'Spanish'}, {name: 'French'}]
+                            },
+                            'color_mksnhewa': {
+                              title: 'Certification',
+                              type: 'color',
+                              labels: [{name: 'Certified'}, {name: 'Pending Certification'}]
+                            },
+                            'status__1': {
+                              title: 'Modality',
+                              type: 'status',
+                              labels: [{name: 'In Person'}, {name: 'Online'}, {name: 'Hybrid'}]
+                            }
+                          });
+                        }, 800);
+                      },
+                      processApplication: function(data) {
+                        console.log("Mock Submission Data:", data);
+                        setTimeout(() => {
+                          success({ success: true, message: "Response submitted successfully! (Mock)" });
+                        }, 1500);
+                      }
+                    };
+                  }
+                };
+              }
+            }
+          }
+        };
+      }
+
+      // Initialize on page load
+      window.onload = function() {
+        addTeacherRow();
+        google.script.run
+          .withSuccessHandler(populateDropdowns)
+          .withFailureHandler(handleError)
+          .getBoardDropdownOptions();
+        
+        // Calendar file upload listener
+        document.getElementById('calendar').addEventListener('change', function(e) {
+          const label = document.querySelector('[data-calendar-label]');
+          if (this.files.length > 0) {
+            label.textContent = this.files[0].name;
+            label.className = 'text-xs text-brand font-medium mt-1';
+          } else {
+            label.textContent = 'No file chosen';
+            label.className = 'text-xs text-gray-500 mt-1';
+          }
+        });
+        
+        // Initialize theme
+        initTheme();
+      };
+
+      // Theme Management
+      function initTheme() {
+        const themeToggle = document.getElementById('themeToggle');
+        const themeDropdown = document.getElementById('themeDropdown');
+        const themeButtons = document.querySelectorAll('[data-theme]');
+        
+        // Get saved theme or default to system
+        const savedTheme = localStorage.getItem('theme') || 'system';
+        applyTheme(savedTheme);
+        
+        // Toggle dropdown
+        themeToggle.addEventListener('click', (e) => {
+          e.stopPropagation();
+          themeDropdown.classList.toggle('hidden');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', () => {
+          themeDropdown.classList.add('hidden');
+        });
+        
+        // Theme selection
+        themeButtons.forEach(button => {
+          button.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const theme = button.dataset.theme;
+            localStorage.setItem('theme', theme);
+            applyTheme(theme);
+            themeDropdown.classList.add('hidden');
+          });
+        });
+      }
+      
+      function applyTheme(theme) {
+        const html = document.documentElement;
+        const lightIcon = document.getElementById('themeIconLight');
+        const darkIcon = document.getElementById('themeIconDark');
+        const systemIcon = document.getElementById('themeIconSystem');
+        
+        // Hide all icons
+        lightIcon.classList.add('hidden');
+        darkIcon.classList.add('hidden');
+        systemIcon.classList.add('hidden');
+        
+        if (theme === 'system') {
+          // Use system preference
+          if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            html.classList.add('dark');
+          } else {
+            html.classList.remove('dark');
+          }
+          systemIcon.classList.remove('hidden');
+        } else if (theme === 'dark') {
+          html.classList.add('dark');
+          darkIcon.classList.remove('hidden');
+        } else {
+          html.classList.remove('dark');
+          lightIcon.classList.remove('hidden');
+        }
+      }
+      
+      // Listen for system theme changes when in system mode
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        const savedTheme = localStorage.getItem('theme') || 'system';
+        if (savedTheme === 'system') {
+          applyTheme('system');
+        }
+      });
+
+      // TBD Checkbox Toggle
+      document.getElementById('tbdCheckbox').addEventListener('change', function() {
+        const isChecked = this.checked;
+        const teachersContainer = document.getElementById('teachersContainer');
+        const addBtn = document.getElementById('addTeacherBtn');
+        const addBtnBottom = document.getElementById('addTeacherBtnBottom');
+        const tbdContainer = document.getElementById('tbdContainer');
+        const teacherCounter = document.getElementById('teacherCounter');
+        const tbdDesc = document.getElementById('tbdDescription');
+
+        if (isChecked) {
+          teachersContainer.classList.add('hidden');
+          addBtn.classList.add('hidden');
+          addBtnBottom.classList.add('hidden');
+          teacherCounter.classList.add('hidden');
+          tbdContainer.classList.remove('hidden');
+          tbdDesc.setAttribute('required', 'true');
+          
+          // Remove required from all teacher fields (inputs, textareas, and selects)
+          document.querySelectorAll('#teachersContainer input[required], #teachersContainer textarea[required], #teachersContainer select[required]').forEach(el => el.removeAttribute('required'));
+        } else {
+          teachersContainer.classList.remove('hidden');
+          addBtn.classList.remove('hidden');
+          addBtnBottom.classList.remove('hidden');
+          teacherCounter.classList.remove('hidden');
+          tbdContainer.classList.add('hidden');
+          tbdDesc.removeAttribute('required');
+
+          // Re-add required to all teacher fields
+          document.querySelectorAll('[name="t_startDate"]').forEach(el => el.setAttribute('required', 'true'));
+          document.querySelectorAll('[name="t_lastDay"]').forEach(el => el.setAttribute('required', 'true'));
+          document.querySelectorAll('[name="t_teachingSchedule"]').forEach(el => el.setAttribute('required', 'true'));
+          document.querySelectorAll('[name="t_certification"]').forEach(el => el.setAttribute('required', 'true'));
+          document.querySelectorAll('[name="t_modality"]').forEach(el => el.setAttribute('required', 'true'));
+        }
+      });
+
+      // Global variable to store dropdown options for teacher rows
+      let globalDropdownOptions = null;
+
+      // Populate dropdowns from Monday.com
+      function populateDropdowns(options) {
+        console.log("Dropdown Options Received:", options);
+        console.log("Available Column IDs:", Object.keys(options));
+        
+        // Store options globally for teacher rows
+        globalDropdownOptions = options;
+        
+        // No parent form fields to populate anymore - all moved to teacher rows
+        
+        // Populate checkboxes and dropdowns in existing teacher rows
+        populateTeacherCheckboxes();
+      }
+
+      // Render checkbox options
+      function renderCheckboxes(columnId, containerId, optionsMap) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        
+        if (optionsMap && optionsMap[columnId] && optionsMap[columnId].labels && optionsMap[columnId].labels.length > 0) {
+          optionsMap[columnId].labels.forEach(opt => {
+            const val = opt.name || opt;
+            const wrapper = document.createElement('label');
+            wrapper.className = "flex items-start p-2 rounded hover:bg-white cursor-pointer transition-colors";
+            wrapper.innerHTML = `
+              <div class="flex items-center h-5">
+                <input id="${containerId}_${val}" type="checkbox" value="${val}" class="w-4 h-4 text-brand bg-gray-100 border-gray-300 rounded focus:ring-brand focus:ring-2">
+              </div>
+              <div class="ml-3 text-sm">
+                <span class="font-medium text-gray-700 select-none">${val}</span>
+              </div>
+            `;
+            container.appendChild(wrapper);
+          });
+        } else {
+          container.innerHTML = '<div class="flex justify-center items-center h-full text-gray-400 text-sm italic">No options available</div>';
+        }
+      }
+
+      // Fill select dropdowns
+      function fillSelect(columnId, elementId, optionsMap, isSingle = false) {
+        const select = document.getElementById(elementId);
+        
+        if (isSingle) { 
+          while (select.options.length > 1) { select.remove(1); }
+        } else { 
+          select.innerHTML = '';
+        }
+
+        const options = optionsMap && optionsMap[columnId] ? optionsMap[columnId].labels : null;
+
+        if (options && options.length > 0) {
+          options.forEach(opt => {
+            const option = document.createElement('option');
+            option.value = opt.name || opt;
+            option.text = opt.name || opt;
+            select.appendChild(option);
+          });
+        } else {
+          const option = document.createElement('option');
+          option.text = "No options found";
+          option.disabled = true;
+          select.appendChild(option);
+        }
+      }
+      
+      // Fill select dropdown for teacher fields
+      function fillTeacherSelect(selectElement, columnId, optionsMap) {
+        if (!selectElement) return;
+        
+        // Clear existing options except the first placeholder
+        while (selectElement.options.length > 1) { 
+          selectElement.remove(1); 
+        }
+
+        const options = optionsMap && optionsMap[columnId] ? optionsMap[columnId].labels : null;
+
+        if (options && options.length > 0) {
+          options.forEach(opt => {
+            const option = document.createElement('option');
+            option.value = opt.name || opt;
+            option.text = opt.name || opt;
+            selectElement.appendChild(option);
+          });
+        } else {
+          const option = document.createElement('option');
+          option.text = "No options found";
+          option.disabled = true;
+          selectElement.appendChild(option);
+        }
+      }
+
+      // Update teacher counter
+      function updateCounter() {
+        const count = document.querySelectorAll('.teacher-row').length;
+        document.getElementById('teacherCounter').textContent = `Total added: ${count}`;
+      }
+
+      // Populate checkboxes in all teacher rows
+      function populateTeacherCheckboxes() {
+        if (!globalDropdownOptions) return;
+        
+        const teacherRows = document.querySelectorAll('.teacher-row');
+        teacherRows.forEach(row => {
+          // Using parent board column IDs (these exist and have the data)
+          renderTeacherCheckboxes(row.querySelector('[name="t_gradeLevels"]'), 'dropdown_mkt6esvc', globalDropdownOptions);
+          renderTeacherCheckboxes(row.querySelector('[name="t_llnServices"]'), 'dropdown_mkt67ese', globalDropdownOptions);
+          renderTeacherCheckboxes(row.querySelector('[name="t_regServices"]'), 'dropdown_mkt6gc13', globalDropdownOptions);
+          renderTeacherCheckboxes(row.querySelector('[name="t_languages"]'), 'dropdown_mkt641g1', globalDropdownOptions);
+          
+          // Populate status dropdowns (Certification and Modality)
+          fillTeacherSelect(row.querySelector('[name="t_certification"]'), 'color_mksnhewa', globalDropdownOptions);
+          fillTeacherSelect(row.querySelector('[name="t_modality"]'), 'status__1', globalDropdownOptions);
+        });
+      }
+
+      // Render checkboxes for teacher fields
+      function renderTeacherCheckboxes(container, columnId, optionsMap) {
+        if (!container) {
+          console.warn(`Container not found for column ${columnId}`);
+          return;
+        }
+        
+        container.innerHTML = '';
+        
+        console.log(`Rendering column ${columnId}:`, optionsMap[columnId]);
+        
+        if (optionsMap && optionsMap[columnId] && optionsMap[columnId].labels && optionsMap[columnId].labels.length > 0) {
+          optionsMap[columnId].labels.forEach(opt => {
+            const val = opt.name || opt;
+            const wrapper = document.createElement('label');
+            wrapper.className = "flex items-start p-2 rounded hover:bg-gray-50 cursor-pointer transition-colors";
+            wrapper.innerHTML = `
+              <div class="flex items-center h-5">
+                <input type="checkbox" value="${val}" class="w-4 h-4 text-brand bg-gray-100 border-gray-300 rounded focus:ring-brand focus:ring-2">
+              </div>
+              <div class="ml-3 text-sm">
+                <span class="font-medium text-gray-700 select-none">${val}</span>
+              </div>
+            `;
+            container.appendChild(wrapper);
+          });
+        } else {
+          console.warn(`No options found for column ${columnId}`);
+          container.innerHTML = '<div class="flex justify-center items-center h-full text-gray-400 text-sm italic">No options available</div>';
+        }
+      }
+
+      // Add teacher row
+      function addTeacherRow() {
+        const container = document.getElementById('teachersContainer');
+        const template = document.getElementById('teacherTemplate');
+        const clone = template.content.cloneNode(true);
+        
+        const count = container.querySelectorAll('.teacher-row').length + 1;
+        clone.querySelector('.teacher-header').textContent = 'Teacher ' + count;
+        
+        container.appendChild(clone);
+        updateCounter();
+        
+        // Populate checkboxes and dropdowns ONLY in the newly added row
+        const newRow = container.lastElementChild;
+        if (globalDropdownOptions && newRow) {
+          renderTeacherCheckboxes(newRow.querySelector('[name="t_gradeLevels"]'), 'dropdown_mkt6esvc', globalDropdownOptions);
+          renderTeacherCheckboxes(newRow.querySelector('[name="t_llnServices"]'), 'dropdown_mkt67ese', globalDropdownOptions);
+          renderTeacherCheckboxes(newRow.querySelector('[name="t_regServices"]'), 'dropdown_mkt6gc13', globalDropdownOptions);
+          renderTeacherCheckboxes(newRow.querySelector('[name="t_languages"]'), 'dropdown_mkt641g1', globalDropdownOptions);
+          
+          fillTeacherSelect(newRow.querySelector('[name="t_certification"]'), 'color_mksnhewa', globalDropdownOptions);
+          fillTeacherSelect(newRow.querySelector('[name="t_modality"]'), 'status__1', globalDropdownOptions);
+        }
+      }
+
+      // Remove teacher row
+      function removeTeacher(btn) {
+        const row = btn.closest('.teacher-row');
+        const container = document.getElementById('teachersContainer');
+        
+        if (container.children.length > 1) {
+          row.remove();
+        } else {
+          row.querySelectorAll('input, textarea').forEach(i => i.value = '');
+        }
+        
+        const rows = container.querySelectorAll('.teacher-row');
+        rows.forEach((r, index) => {
+          r.querySelector('.teacher-header').textContent = 'Teacher ' + (index + 1);
+        });
+        
+        updateCounter();
+      }
+
+      // Update file name display
+      function updateFileName(input) {
+        const label = input.closest('.space-y-1').querySelector('[data-file-label]');
+        if (input.files && input.files.length > 0) {
+          label.textContent = input.files[0].name;
+          label.className = "text-xs text-brand font-medium break-all";
+        } else {
+          label.textContent = "No file chosen";
+          label.className = "text-xs text-gray-500";
+        }
+      }
+
+      // Error handler
+      function handleError(error) {
+        alert("Error loading data: " + error.message);
+      }
+
+      // Validation functions
+      function isValidEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+      }
+
+      function isValidAddress(address) {
+        return address && address.trim().length >= 10;
+      }
+
+      // Form submission
+      document.getElementById('appForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const btn = document.getElementById('submitBtn');
+        const statusDiv = document.getElementById('statusMessage');
+
+        const getVal = (id) => document.getElementById(id).value;
+        const getMultiVal = (containerId) => {
+          const checkboxes = document.querySelectorAll(`#${containerId} input[type="checkbox"]:checked`);
+          return Array.from(checkboxes).map(cb => cb.value);
+        };
+
+        // Validation
+        const email = getVal('email');
+        const emailError = document.getElementById('emailError');
+        if (!isValidEmail(email)) {
+          document.getElementById('email').classList.add('border-red-500', 'focus:ring-red-500');
+          emailError.classList.remove('hidden');
+          document.getElementById('email').focus();
+          return;
+        } else {
+          document.getElementById('email').classList.remove('border-red-500', 'focus:ring-red-500');
+          emailError.classList.add('hidden');
+        }
+
+        const address = getVal('address');
+        const addressError = document.getElementById('addressError');
+        if (!isValidAddress(address)) {
+          document.getElementById('address').classList.add('border-red-500', 'focus:ring-red-500');
+          addressError.classList.remove('hidden');
+          document.getElementById('address').focus();
+          return;
+        } else {
+          document.getElementById('address').classList.remove('border-red-500', 'focus:ring-red-500');
+          addressError.classList.add('hidden');
+        }
+        
+        btn.disabled = true;
+        btn.innerHTML = '<div class="loader mr-3"></div> Submitting response...';
+        btn.classList.add('opacity-75', 'cursor-not-allowed');
+        statusDiv.className = 'hidden';
+
+        try {
+          const isTbd = document.getElementById('tbdCheckbox').checked;
+          const teachersList = [];
+          let numberOfTeachersVal = "";
+
+          if (isTbd) {
+            numberOfTeachersVal = document.getElementById('tbdDescription').value;
+          } else {
+            const rows = document.querySelectorAll('.teacher-row');
+            numberOfTeachersVal = rows.length.toString();
+
+            for (let i = 0; i < rows.length; i++) {
+              const row = rows[i];
+              const teacherNumber = i + 1;
+              const teacherName = `Teacher ${teacherNumber}`;
+              const desc = row.querySelector('[name="t_desc"]').value;
+              const fileInput = row.querySelector('[name="t_file"]');
+              
+              // Collect checkboxes for each teacher
+              const getTeacherCheckboxes = (containerName) => {
+                const container = row.querySelector(`[name="${containerName}"]`);
+                if (!container) return [];
+                const checkboxes = container.querySelectorAll('input[type="checkbox"]:checked');
+                return Array.from(checkboxes).map(cb => cb.value);
+              };
+              
+              const gradeLevels = getTeacherCheckboxes('t_gradeLevels');
+              const llnServices = getTeacherCheckboxes('t_llnServices');
+              const languages = getTeacherCheckboxes('t_languages');
+              const regServices = getTeacherCheckboxes('t_regServices');
+              const startDate = row.querySelector('[name="t_startDate"]').value;
+              const lastDay = row.querySelector('[name="t_lastDay"]').value;
+              const certification = row.querySelector('[name="t_certification"]').value;
+              const modality = row.querySelector('[name="t_modality"]').value;
+              const teachingSchedule = row.querySelector('[name="t_teachingSchedule"]').value;
+              
+              // Validate teacher fields
+              if (gradeLevels.length === 0) {
+                alert(`Please select at least one Grade Level for ${teacherName}`);
+                btn.disabled = false;
+                btn.innerHTML = 'Submit Response';
+                btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                return;
+              }
+              if (llnServices.length === 0) {
+                alert(`Please select at least one LLN Service for ${teacherName}`);
+                btn.disabled = false;
+                btn.innerHTML = 'Submit Response';
+                btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                return;
+              }
+              if (languages.length === 0) {
+                alert(`Please select at least one Language for ${teacherName}`);
+                btn.disabled = false;
+                btn.innerHTML = 'Submit Response';
+                btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                return;
+              }
+              if (regServices.length === 0) {
+                alert(`Please select at least one REG Service for ${teacherName}`);
+                btn.disabled = false;
+                btn.innerHTML = 'Submit Response';
+                btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                return;
+              }
+              
+              let fileData = null;
+              let fileName = null;
+              let mimeType = null;
+
+              if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                fileName = file.name;
+                mimeType = file.type;
+                fileData = await readFileAsBase64(file);
+              }
+
+              teachersList.push({
+                name: teacherName,
+                teacherNumber: teacherNumber,
+                description: desc,
+                teachingSchedule: teachingSchedule,
+                gradeLevels: gradeLevels,
+                llnServices: llnServices,
+                languages: languages,
+                regServices: regServices,
+                startDate: startDate,
+                lastDay: lastDay,
+                certification: certification,
+                modality: modality,
+                fileName: fileName,
+                mimeType: mimeType,
+                fileData: fileData
+              });
+            }
+          }
+
+          // Handle calendar file upload
+          const calendarInput = document.getElementById('calendar');
+          let calendarFileName = null;
+          let calendarMimeType = null;
+          let calendarFileData = null;
+          
+          if (calendarInput.files.length > 0) {
+            const calendarFile = calendarInput.files[0];
+            calendarFileName = calendarFile.name;
+            calendarMimeType = calendarFile.type;
+            calendarFileData = await readFileAsBase64(calendarFile);
+          }
+          
+          // Merge title with full name
+          const title = getVal('title');
+          const fullName = getVal('fullName');
+          const fullNameWithTitle = title ? `${title} ${fullName}` : fullName;
+
+          const schoolData = {
+            schoolName: getVal('schoolName'),
+            fullName: fullNameWithTitle,
+            address: address,
+            email: email,
+            calendarFileName: calendarFileName,
+            calendarMimeType: calendarMimeType,
+            calendarFileData: calendarFileData,
+            teacherDays: getVal('teacherDays'),
+            duties: getVal('duties'),
+            salary: getVal('salary'),
+            additionalInfo: getVal('additionalInfo'),
+            numberOfTeachers: numberOfTeachersVal
+          };
+
+          google.script.run
+            .withSuccessHandler((response) => {
+              btn.disabled = false;
+              btn.innerHTML = 'Submit Response';
+              btn.classList.remove('opacity-75', 'cursor-not-allowed');
+              
+              statusDiv.className = response.success 
+                ? 'mt-6 p-4 rounded-lg text-center bg-green-50 text-green-800 border border-green-200 shadow-sm' 
+                : 'mt-6 p-4 rounded-lg text-center bg-red-50 text-red-800 border border-red-200 shadow-sm';
+              
+              statusDiv.innerHTML = response.success 
+                ? `<i class="fas fa-check-circle mr-2"></i> ${response.message}`
+                : `<i class="fas fa-exclamation-circle mr-2"></i> ${response.message}`;
+                
+              statusDiv.classList.remove('hidden');
+
+              if(response.success) {
+                document.getElementById('appForm').reset();
+                document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+                
+                document.getElementById('tbdContainer').classList.add('hidden');
+                document.getElementById('teachersContainer').classList.remove('hidden');
+                document.getElementById('addTeacherBtn').classList.remove('hidden');
+                document.getElementById('addTeacherBtnBottom').classList.remove('hidden');
+                document.getElementById('teacherCounter').classList.remove('hidden');
+
+                document.getElementById('teachersContainer').innerHTML = '';
+                document.querySelectorAll('[data-file-label]').forEach(l => {
+                  l.textContent = "No file chosen";
+                  l.className = "text-xs text-gray-500";
+                });
+                
+                addTeacherRow();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            })
+            .withFailureHandler((err) => {
+              btn.disabled = false;
+              btn.innerHTML = 'Submit Response';
+              btn.classList.remove('opacity-75', 'cursor-not-allowed');
+              statusDiv.className = 'mt-6 p-4 rounded-lg text-center bg-red-50 text-red-800 border border-red-200';
+              statusDiv.innerHTML = `<i class="fas fa-bug mr-2"></i> System Error: ${err.message}`;
+              statusDiv.classList.remove('hidden');
+            })
+            .processApplication({ schoolData, teachers: teachersList });
+
+        } catch (error) {
+          console.error(error);
+          btn.disabled = false;
+          btn.innerHTML = 'Submit Response';
+          btn.classList.remove('opacity-75', 'cursor-not-allowed');
+          alert("Client Error: " + error.message);
+        }
+      });
+
+      // Read file as base64
+      function readFileAsBase64(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const result = reader.result;
+            const base64 = result.split(',')[1];
+            resolve(base64);
+          };
+          reader.onerror = error => reject(error);
+          reader.readAsDataURL(file);
+        });
+      }
+    </script>
+  </body>
+</html>
