@@ -240,7 +240,3 @@ See the comprehensive troubleshooting section in the full README for:
 **v2.0** (2025-01-07): Major update with PDF generation, performance optimization, field restructuring
 
 **v1.0** (2025-01-07): Initial release
-
----
-
-**Built with ❤️ for Kreyco Partnership Inquiries**
