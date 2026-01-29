@@ -1,0 +1,9 @@
+Preview Folder/**
+Preview*
+*.py
+*.md
+.vscode
+.git
+task.md
+implementation_plan.md
+walkthrough.md

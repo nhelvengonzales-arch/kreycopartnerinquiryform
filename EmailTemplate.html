@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partnership Inquiry Response</title>
+</head>
+
+<body
+    style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #1f2937;">
+
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation"
+        style="background-color: #f3f4f6; padding: 20px 0;">
+        <tr>
+            <td align="center">
+
+                <!-- Main Container -->
+                <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation"
+                    style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
+
+                    <!-- Header -->
+                    <tr>
+                        <td style="padding: 30px 40px; text-align: center; border-bottom: 2px solid #f3f4f6;">
+                            <img src="https://kreyco.s3.us-east-2.amazonaws.com/kreyco-logo.png" alt="Kreyco"
+                                style="height: 50px; display: inline-block; margin-bottom: 15px;">
+                            <h1 style="margin: 0; color: #16367B; font-size: 24px; font-weight: 700;">Partnership
+                                Inquiry</h1>
+                        </td>
+                    </tr>
+
+                    <!-- School Information Section -->
+                    <tr>
+                        <td style="padding: 30px 40px 10px 40px;">
+                            <h2
+                                style="margin: 0 0 20px 0; color: #16367B; font-size: 18px; font-weight: 600; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">
+                                School Information
+                            </h2>
+
+                            <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
+                                <tr>
+                                    <td
+                                        style="padding-bottom: 12px; font-weight: 600; color: #4b5563; width: 140px; vertical-align: top;">
+                                        School Name:</td>
+                                    <td style="padding-bottom: 12px; color: #111827; vertical-align: top;">
+                                        <?= schoolData.schoolName ?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td
+                                        style="padding-bottom: 12px; font-weight: 600; color: #4b5563; vertical-align: top;">
+                                        Address:</td>
+                                    <td style="padding-bottom: 12px; color: #111827; vertical-align: top;">
+                                        <?= schoolData.address ?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td
+                                        style="padding-bottom: 12px; font-weight: 600; color: #4b5563; vertical-align: top;">
+                                        Contact:</td>
+                                    <td style="padding-bottom: 12px; color: #111827; vertical-align: top;">
+                                        <?= schoolData.fullName ?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td
+                                        style="padding-bottom: 12px; font-weight: 600; color: #4b5563; vertical-align: top;">
+                                        Email:</td>
+                                    <td style="padding-bottom: 12px; color: #111827; vertical-align: top;">
+                                        <?= schoolData.email ?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td
+                                        style="padding-bottom: 12px; font-weight: 600; color: #4b5563; vertical-align: top;">
+                                        Phone:</td>
+                                    <td style="padding-bottom: 12px; color: #111827; vertical-align: top;">
+                                        <?= schoolData.phone ?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td
+                                        style="padding-bottom: 12px; font-weight: 600; color: #4b5563; vertical-align: top;">
+                                        School Calendar:</td>
+                                    <td style="padding-bottom: 12px; color: #111827; vertical-align: top;">
+                                        <? if (schoolData.calendarText) { ?>
+                                        <div
+                                            style="background-color: #f9fafb; padding: 10px; border-radius: 6px; border: 1px solid #e5e7eb; white-space: pre-wrap; font-size: 14px;">
+                                            <?= schoolData.calendarText ?>
+                                        </div>
+                                        <? } else if (schoolData.calendarUrl) { ?>
+                                        <a href="<?= schoolData.calendarUrl ?>"
+                                            style="color: #16367B; text-decoration: none; font-weight: 500;">View
+                                            File</a>
+                                        <? } else { ?>
+                                        <span style="color: #9ca3af; font-style: italic;">Not provided</span>
+                                        <? } ?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td
+                                        style="padding-bottom: 12px; font-weight: 600; color: #4b5563; vertical-align: top;">
+                                        Bell Schedule:</td>
+                                    <td style="padding-bottom: 12px; color: #111827; vertical-align: top;">
+                                        <? if (schoolData.bellScheduleText) { ?>
+                                        <div
+                                            style="background-color: #f9fafb; padding: 10px; border-radius: 6px; border: 1px solid #e5e7eb; white-space: pre-wrap; font-size: 14px;">
+                                            <?= schoolData.bellScheduleText ?>
+                                        </div>
+                                        <? } else if (schoolData.bellUrl) { ?>
+                                        <a href="<?= schoolData.bellUrl ?>"
+                                            style="color: #16367B; text-decoration: none; font-weight: 500;">View
+                                            File</a>
+                                        <? } else { ?>
+                                        <span style="color: #9ca3af; font-style: italic;">Not provided</span>
+                                        <? } ?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td
+                                        style="padding-bottom: 12px; font-weight: 600; color: #4b5563; vertical-align: top;">
+                                        Additional Info:</td>
+                                    <td style="padding-bottom: 12px; color: #111827; vertical-align: top;">
+                                        <?= schoolData.additionalInfo || '<span style="color: #9ca3af; font-style: italic;">None provided</span>' ?>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Teachers Section -->
+                    <tr>
+                        <td style="padding: 20px 40px 30px 40px;">
+                            <? 
+                 var teacherTitle = 'Teachers';
+                 if (teachers && teachers.length > 0) {
+                   teacherTitle += ' (' + teachers.length + ')';
+                 }
+              ?>
+                            <h2
+                                style="margin: 0 0 20px 0; color: #16367B; font-size: 18px; font-weight: 600; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">
+                                <?= teacherTitle ?>
+                            </h2>
+
+                            <? if (teachers && teachers.length > 0) { ?>
+                            <!-- List of Teachers -->
+                            <? for (var i = 0; i < teachers.length; i++) { ?>
+                            <? var teacher = teachers[i]; ?>
+                            <div
+                                style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 15px;">
+                                <div
+                                    style="color: #16367B; font-weight: 700; font-size: 16px; margin-bottom: 10px; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px;">
+                                    <?= teacher.name ?>
+                                </div>
+
+                                <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
+                                    <? if (teacher.campusName) { ?>
+                                    <tr>
+                                        <td
+                                            style="padding-bottom: 6px; font-weight: 600; color: #4b5563; width: 130px; vertical-align: top; font-size: 14px;">
+                                            Campus Name:</td>
+                                        <td
+                                            style="padding-bottom: 6px; color: #374151; vertical-align: top; font-size: 14px;">
+                                            <?= teacher.campusName ?>
+                                        </td>
+                                    </tr>
+                                    <? } ?>
+                                    <? if (teacher.campusAddress) { ?>
+                                    <tr>
+                                        <td
+                                            style="padding-bottom: 6px; font-weight: 600; color: #4b5563; vertical-align: top; font-size: 14px;">
+                                            Campus Address:</td>
+                                        <td
+                                            style="padding-bottom: 6px; color: #374151; vertical-align: top; font-size: 14px;">
+                                            <?= teacher.campusAddress ?>
+                                        </td>
+                                    </tr>
+                                    <? } ?>
+                                    <? if (teacher.description) { ?>
+                                    <tr>
+                                        <td
+                                            style="padding-bottom: 6px; font-weight: 600; color: #4b5563; width: 130px; vertical-align: top; font-size: 14px;">
+                                            Description:</td>
+                                        <td
+                                            style="padding-bottom: 6px; color: #374151; vertical-align: top; font-size: 14px;">
+                                            <?= teacher.description ?>
+                                        </td>
+                                    </tr>
+                                    <? } ?>
+                                    <? if (teacher.duties) { ?>
+                                    <tr>
+                                        <td
+                                            style="padding-bottom: 6px; font-weight: 600; color: #4b5563; vertical-align: top; font-size: 14px;">
+                                            Duties:</td>
+                                        <td
+                                            style="padding-bottom: 6px; color: #374151; vertical-align: top; font-size: 14px;">
+                                            <?= teacher.duties ?>
+                                        </td>
+                                    </tr>
+                                    <? } ?>
+                                    <? if (teacher.gradeLevels && teacher.gradeLevels.length > 0) { ?>
+                                    <tr>
+                                        <td
+                                            style="padding-bottom: 6px; font-weight: 600; color: #4b5563; vertical-align: top; font-size: 14px;">
+                                            Grades:</td>
+                                        <td
+                                            style="padding-bottom: 6px; color: #374151; vertical-align: top; font-size: 14px;">
+                                            <?= teacher.gradeLevels.join(', ') ?>
+                                        </td>
+                                    </tr>
+                                    <? } ?>
+                                    <? if (teacher.certification) { ?>
+                                    <tr>
+                                        <td
+                                            style="padding-bottom: 6px; font-weight: 600; color: #4b5563; vertical-align: top; font-size: 14px;">
+                                            Certification:</td>
+                                        <td
+                                            style="padding-bottom: 6px; color: #374151; vertical-align: top; font-size: 14px;">
+                                            <?= teacher.certification ?>
+                                        </td>
+                                    </tr>
+                                    <? } ?>
+                                    <? if (teacher.modality) { ?>
+                                    <tr>
+                                        <td
+                                            style="padding-bottom: 6px; font-weight: 600; color: #4b5563; vertical-align: top; font-size: 14px;">
+                                            Modality:</td>
+                                        <td
+                                            style="padding-bottom: 6px; color: #374151; vertical-align: top; font-size: 14px;">
+                                            <?= teacher.modality ?>
+                                        </td>
+                                    </tr>
+                                    <? } ?>
+                                    <? if (teacher.languages && teacher.languages.length > 0) { ?>
+                                    <tr>
+                                        <td
+                                            style="padding-bottom: 6px; font-weight: 600; color: #4b5563; vertical-align: top; font-size: 14px;">
+                                            Languages:</td>
+                                        <td
+                                            style="padding-bottom: 6px; color: #374151; vertical-align: top; font-size: 14px;">
+                                            <?= teacher.languages.join(', ') ?>
+                                        </td>
+                                    </tr>
+                                    <? } ?>
+                                    <? if (teacher.llnServices && teacher.llnServices.length > 0) { ?>
+                                    <tr>
+                                        <td
+                                            style="padding-bottom: 6px; font-weight: 600; color: #4b5563; vertical-align: top; font-size: 14px;">
+                                            Language Acquisition:</td>
+                                        <td
+                                            style="padding-bottom: 6px; color: #374151; vertical-align: top; font-size: 14px;">
+                                            <?= teacher.llnServices.join(', ') ?>
+                                        </td>
+                                    </tr>
+                                    <? } ?>
+                                    <? if (teacher.humanities && teacher.humanities.length > 0) { ?>
+                                    <tr>
+                                        <td
+                                            style="padding-bottom: 6px; font-weight: 600; color: #4b5563; vertical-align: top; font-size: 14px;">
+                                            Humanities:</td>
+                                        <td
+                                            style="padding-bottom: 6px; color: #374151; vertical-align: top; font-size: 14px;">
+                                            <?= teacher.humanities.join(', ') ?>
+                                        </td>
+                                    </tr>
+                                    <? } ?>
+                                    <? if (teacher.stem && teacher.stem.length > 0) { ?>
+                                    <tr>
+                                        <td
+                                            style="padding-bottom: 6px; font-weight: 600; color: #4b5563; vertical-align: top; font-size: 14px;">
+                                            STEM:</td>
+                                        <td
+                                            style="padding-bottom: 6px; color: #374151; vertical-align: top; font-size: 14px;">
+                                            <?= teacher.stem.join(', ') ?>
+                                        </td>
+                                    </tr>
+                                    <? } ?>
+                                    <? if (teacher.sped && teacher.sped.length > 0) { ?>
+                                    <tr>
+                                        <td
+                                            style="padding-bottom: 6px; font-weight: 600; color: #4b5563; vertical-align: top; font-size: 14px;">
+                                            SPED:</td>
+                                        <td
+                                            style="padding-bottom: 6px; color: #374151; vertical-align: top; font-size: 14px;">
+                                            <?= teacher.sped.join(', ') ?>
+                                        </td>
+                                    </tr>
+                                    <? } ?>
+                                    <? if (teacher.para && teacher.para.length > 0) { ?>
+                                    <tr>
+                                        <td
+                                            style="padding-bottom: 6px; font-weight: 600; color: #4b5563; vertical-align: top; font-size: 14px;">
+                                            Paraprofessional Support:</td>
+                                        <td
+                                            style="padding-bottom: 6px; color: #374151; vertical-align: top; font-size: 14px;">
+                                            <?= teacher.para.join(', ') ?>
+                                        </td>
+                                    </tr>
+                                    <? } ?>
+                                    <? if (teacher.teachingSchedule) { ?>
+                                    <tr>
+                                        <td
+                                            style="padding-bottom: 6px; font-weight: 600; color: #4b5563; vertical-align: top; font-size: 14px;">
+                                            Schedule:</td>
+                                        <td
+                                            style="padding-bottom: 6px; color: #374151; vertical-align: top; font-size: 14px;">
+                                            <?= teacher.teachingSchedule ?>
+                                        </td>
+                                    </tr>
+                                    <? } ?>
+                                    <? if (teacher.annualSalary) { ?>
+                                    <tr>
+                                        <td
+                                            style="padding-bottom: 6px; font-weight: 600; color: #4b5563; vertical-align: top; font-size: 14px;">
+                                            Annual Salary & Benefits:</td>
+                                        <td
+                                            style="padding-bottom: 6px; color: #374151; vertical-align: top; font-size: 14px;">
+                                            <?= teacher.annualSalary ?>
+                                        </td>
+                                    </tr>
+                                    <? } ?>
+                                    <? if (teacher.proratedSalary) { ?>
+                                    <tr>
+                                        <td
+                                            style="padding-bottom: 6px; font-weight: 600; color: #4b5563; vertical-align: top; font-size: 14px;">
+                                            Prorated Salary & Benefits:</td>
+                                        <td
+                                            style="padding-bottom: 6px; color: #374151; vertical-align: top; font-size: 14px;">
+                                            <?= teacher.proratedSalary ?>
+                                        </td>
+                                    </tr>
+                                    <? } ?>
+                                    <? if (teacher.startDate) { ?>
+                                    <tr>
+                                        <td
+                                            style="padding-bottom: 6px; font-weight: 600; color: #4b5563; vertical-align: top; font-size: 14px;">
+                                            Start Date:</td>
+                                        <td
+                                            style="padding-bottom: 6px; color: #374151; vertical-align: top; font-size: 14px;">
+                                            <?= teacher.startDate ?>
+                                        </td>
+                                    </tr>
+                                    <? } ?>
+                                    <? if (teacher.lastDay) { ?>
+                                    <tr>
+                                        <td
+                                            style="padding-bottom: 6px; font-weight: 600; color: #4b5563; vertical-align: top; font-size: 14px;">
+                                            End Date:</td>
+                                        <td
+                                            style="padding-bottom: 6px; color: #374151; vertical-align: top; font-size: 14px;">
+                                            <?= teacher.lastDay ?>
+                                        </td>
+                                    </tr>
+                                    <? } ?>
+                                    <? if (teacher.instructionalDays) { ?>
+                                    <tr>
+                                        <td
+                                            style="padding-bottom: 6px; font-weight: 600; color: #4b5563; vertical-align: top; font-size: 14px;">
+                                            Instructional Days:</td>
+                                        <td
+                                            style="padding-bottom: 6px; color: #374151; vertical-align: top; font-size: 14px;">
+                                            <?= teacher.instructionalDays ?>
+                                        </td>
+                                    </tr>
+                                    <? } ?>
+                                </table>
+                            </div>
+                            <? } ?>
+
+                            <? } else { ?>
+                            <!-- TBD Mode Description -->
+                            <? var tbdDesc = schoolData.numberOfTeachers || 'No specific teacher details provided (TBD Mode).'; ?>
+                            <div
+                                style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; font-style: italic; color: #4b5563;">
+                                <?= tbdDesc ?>
+                            </div>
+                            <? } ?>
+                        </td>
+                    </tr>
+
+                    <!-- CTA Button -->
+                    <tr>
+                        <td align="center" style="padding: 0 40px 40px 40px;">
+                            <a href="<?= mondayUrl ?>"
+                                style="background-color: #16367B; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">
+                                <img src="https://cdn.monday.com/favicon-monday-v4.png" alt="Monday.com" width="20"
+                                    height="20" style="vertical-align: middle; margin-right: 8px;">
+                                <span style="vertical-align: middle;">View in Monday.com</span>
+                            </a>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td
+                            style="background-color: #1f2937; color: #9ca3af; padding: 20px; text-align: center; font-size: 12px;">
+                            <p style="margin: 0 0 10px 0;">ID:
+                                <?= itemId ?> | Submitted:
+                                <?= submissionDate ?>
+                            </p>
+                            <p style="margin: 0;">&copy;
+                                <?= new Date().getFullYear() ?> Kreyco. All rights reserved.
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+
+            </td>
+        </tr>
+    </table>
+
+</body>
+
+</html>

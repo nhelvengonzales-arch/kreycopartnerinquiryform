@@ -1,0 +1,1196 @@
+<script>
+    // Mock google.script.run for local testing
+    if (typeof google === 'undefined') {
+        console.warn("Running outside Google Apps Script. Mocking server calls.");
+        window.google = {
+            script: {
+                run: {
+                    withSuccessHandler: function (success) {
+                        return {
+                            withFailureHandler: function (failure) {
+                                return {
+                                    getBoardDropdownOptions: function () {
+                                        setTimeout(() => {
+                                            success({
+                                                'dropdown_mkzc6dgm': {
+                                                    title: 'Grade Levels',
+                                                    type: 'dropdown',
+                                                    labels: [{ name: 'Grade 1' }, { name: 'Grade 2' }, { name: 'Grade 3' }]
+                                                },
+                                                'dropdown_mkt67ese': {
+                                                    title: 'LLN Services',
+                                                    type: 'dropdown',
+                                                    labels: [{ name: 'Special Education' }, { name: 'Speech Therapy' }]
+                                                },
+                                                'dropdown_mkt6gc13': {
+                                                    title: 'REG Services',
+                                                    type: 'dropdown',
+                                                    labels: [{ name: 'Math Support' }, { name: 'Reading Intervention' }]
+                                                },
+                                                'dropdown_mkt641g1': {
+                                                    title: 'Languages',
+                                                    type: 'dropdown',
+                                                    labels: [{ name: 'Spanish' }, { name: 'French' }]
+                                                },
+                                                'color_mksnhewa': {
+                                                    title: 'Certification',
+                                                    type: 'color',
+                                                    labels: [{ name: 'Certified' }, { name: 'Pending Certification' }]
+                                                },
+                                                'status__1': {
+                                                    title: 'Modality',
+                                                    type: 'status',
+                                                    labels: [{ name: 'In Person' }, { name: 'Online' }, { name: 'Hybrid' }]
+                                                }
+                                            });
+                                        }, 800);
+                                    },
+                                    processApplication: function (data) {
+                                        console.log("Mock Submission Data:", data);
+                                        setTimeout(() => {
+                                            success({ success: true, message: "Response submitted successfully! (Mock)" });
+                                        }, 1500);
+                                    }
+                                };
+                            }
+                        };
+                    }
+                }
+            }
+        };
+    }
+
+    // Track if user has interacted with teacher sections
+
+
+    // Initialize on page load
+    window.onload = function () {
+        addTeacherRow();
+        checkForDraft(); // Check if there's a saved draft
+        google.script.run
+            .withSuccessHandler(populateDropdowns)
+            .withFailureHandler(handleError)
+            .getBoardDropdownOptions();
+
+        // Calendar file upload listener
+        document.getElementById('calendar').addEventListener('change', function (e) {
+            const label = document.querySelector('[data-calendar-label]');
+            if (this.files.length > 0) {
+                label.textContent = this.files[0].name;
+                label.className = 'text-xs text-brand font-medium mt-1';
+            } else {
+                label.textContent = 'No file chosen';
+                label.className = 'text-xs text-gray-500 mt-1';
+            }
+        });
+
+        // Bell Schedule file upload listener
+        document.getElementById('bellSchedule').addEventListener('change', function (e) {
+            const label = document.querySelector('[data-bell-schedule-label]');
+            if (this.files.length > 0) {
+                label.textContent = this.files[0].name;
+                label.className = 'text-xs text-brand font-medium mt-1';
+            } else {
+                label.textContent = 'No file chosen';
+                label.className = 'text-xs text-gray-500 mt-1';
+            }
+        });
+
+        // Initialize theme
+        initTheme();
+
+        // Collapse all teachers when clicking/focusing on school information fields
+
+    };
+
+    // Calculate days between two dates (Inclusive)
+    function calculateDays(startStr, endStr) {
+        if (!startStr || !endStr) return '';
+
+        const start = new Date(startStr);
+        const end = new Date(endStr);
+
+        // Check if dates are valid
+        if (isNaN(start.getTime()) || isNaN(end.getTime())) return '';
+
+        // Calculate difference in milliseconds
+        const diffTime = end - start;
+
+        // Convert to days (divide by milliseconds per day)
+        // Adding 1 to be inclusive (e.g. Mon-Fri is 5 days, not 4)
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+        return diffDays > 0 ? diffDays : 0;
+    }
+
+    // Theme Management
+    function initTheme() {
+        const themeToggle = document.getElementById('themeToggle');
+        const themeDropdown = document.getElementById('themeDropdown');
+        const themeButtons = document.querySelectorAll('[data-theme]');
+
+        // Get saved theme or default to system
+        const savedTheme = localStorage.getItem('theme') || 'system';
+        applyTheme(savedTheme);
+
+        // Toggle dropdown
+        themeToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            themeDropdown.classList.toggle('hidden');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', () => {
+            themeDropdown.classList.add('hidden');
+        });
+
+        // Theme selection
+        themeButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const theme = button.dataset.theme;
+                localStorage.setItem('theme', theme);
+                applyTheme(theme);
+                themeDropdown.classList.add('hidden');
+            });
+        });
+    }
+
+    function applyTheme(theme) {
+        const html = document.documentElement;
+        const lightIcon = document.getElementById('themeIconLight');
+        const darkIcon = document.getElementById('themeIconDark');
+        const systemIcon = document.getElementById('themeIconSystem');
+
+        // Hide all icons
+        lightIcon.classList.add('hidden');
+        darkIcon.classList.add('hidden');
+        systemIcon.classList.add('hidden');
+
+        if (theme === 'system') {
+            // Use system preference
+            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                html.classList.add('dark');
+            } else {
+                html.classList.remove('dark');
+            }
+            systemIcon.classList.remove('hidden');
+        } else if (theme === 'dark') {
+            html.classList.add('dark');
+            darkIcon.classList.remove('hidden');
+        } else {
+            html.classList.remove('dark');
+            lightIcon.classList.remove('hidden');
+        }
+    }
+
+    // Listen for system theme changes when in system mode
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        const savedTheme = localStorage.getItem('theme') || 'system';
+        if (savedTheme === 'system') {
+            applyTheme('system');
+        }
+    });
+
+    // TBD Checkbox Toggle
+    document.getElementById('tbdCheckbox').addEventListener('change', function () {
+        const isChecked = this.checked;
+        const teachersContainer = document.getElementById('teachersContainer');
+        const addBtn = document.getElementById('addTeacherBtn');
+        const addBtnBottom = document.getElementById('addTeacherBtnBottom');
+        const tbdContainer = document.getElementById('tbdContainer');
+        const teacherCounter = document.getElementById('teacherCounter');
+        const tbdDesc = document.getElementById('tbdDescription');
+
+        if (isChecked) {
+            teachersContainer.classList.add('hidden');
+            addBtn.classList.add('hidden');
+            addBtnBottom.classList.add('hidden');
+            teacherCounter.classList.add('hidden');
+            tbdContainer.classList.remove('hidden');
+            tbdDesc.setAttribute('required', 'true');
+
+            // Remove required from all teacher fields (inputs, textareas, and selects)
+            document.querySelectorAll('#teachersContainer input[required], #teachersContainer textarea[required], #teachersContainer select[required]').forEach(el => el.removeAttribute('required'));
+        } else {
+            teachersContainer.classList.remove('hidden');
+            addBtn.classList.remove('hidden');
+            addBtnBottom.classList.remove('hidden');
+            teacherCounter.classList.remove('hidden');
+            tbdContainer.classList.add('hidden');
+            tbdDesc.removeAttribute('required');
+
+            // Re-add required to all teacher fields
+            document.querySelectorAll('[name="t_startDate"]').forEach(el => el.setAttribute('required', 'true'));
+            document.querySelectorAll('[name="t_lastDay"]').forEach(el => el.setAttribute('required', 'true'));
+            // t_teachingSchedule is handled by custom validation (Text OR File), so we do NOT set required attribute
+            document.querySelectorAll('[name="t_duties"]').forEach(el => el.setAttribute('required', 'true'));
+            document.querySelectorAll('[name="t_annualSalary"]').forEach(el => el.setAttribute('required', 'true'));
+            document.querySelectorAll('[name="t_proratedSalary"]').forEach(el => el.setAttribute('required', 'true'));
+            document.querySelectorAll('[name="t_certification"]').forEach(el => el.setAttribute('required', 'true'));
+            document.querySelectorAll('[name="t_modality"]').forEach(el => el.setAttribute('required', 'true'));
+        }
+    });
+
+    // Global variable to store dropdown options for teacher rows
+    let globalDropdownOptions = null;
+
+    // Populate dropdowns from Monday.com
+    function populateDropdowns(options) {
+        console.log("Dropdown Options Received:", options);
+        console.log("Available Column IDs:", Object.keys(options));
+
+        // Store options globally for teacher rows
+        globalDropdownOptions = options;
+
+        // No parent form fields to populate anymore - all moved to teacher rows
+
+        // Populate checkboxes and dropdowns in existing teacher rows
+        populateTeacherCheckboxes();
+
+        // Populate Global Certification Dropdown
+        fillSelect('color_mksnhewa', 'certification', globalDropdownOptions);
+    }
+
+    // Render checkbox options with custom sorting
+    function renderCheckboxes(columnId, containerId, optionsMap) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+
+        if (optionsMap && optionsMap[columnId] && optionsMap[columnId].labels && optionsMap[columnId].labels.length > 0) {
+            // Get all options
+            let options = optionsMap[columnId].labels.map(opt => opt.name || opt);
+
+            // Custom sorting: move NA and Other to the end
+            const itemsToMoveToEnd = ['NA', 'Other'];
+            const regularItems = options.filter(opt => !itemsToMoveToEnd.includes(opt));
+            const specialItems = options.filter(opt => itemsToMoveToEnd.includes(opt));
+            options = [...regularItems, ...specialItems];
+
+            // Render sorted options
+            options.forEach(val => {
+                const wrapper = document.createElement('label');
+                wrapper.className = "flex items-start p-2 rounded hover:bg-white cursor-pointer transition-colors checkbox-label";
+                wrapper.innerHTML = `
+          <div class="flex items-center h-5">
+            <input id="${containerId}_${val}" type="checkbox" value="${val}" class="w-4 h-4 text-brand bg-gray-100 border-gray-300 rounded focus:ring-brand focus:ring-2">
+          </div>
+          <div class="ml-3 text-sm">
+            <span class="font-medium text-gray-700 select-none">${val}</span>
+          </div>
+        `;
+                container.appendChild(wrapper);
+            });
+        } else {
+            container.innerHTML = '<div class="flex justify-center items-center h-full text-gray-400 text-sm italic">No options available</div>';
+        }
+    }
+
+    // Fill select dropdowns with custom sorting
+    function fillSelect(columnId, elementId, optionsMap, isSingle = false) {
+        const select = document.getElementById(elementId);
+
+        if (isSingle) {
+            while (select.options.length > 1) { select.remove(1); }
+        } else {
+            select.innerHTML = '';
+        }
+
+        const options = optionsMap && optionsMap[columnId] ? optionsMap[columnId].labels : null;
+
+        if (options && options.length > 0) {
+            // Get all option values
+            let optionValues = options.map(opt => opt.name || opt);
+
+            // Custom sorting: move "Both Options are fine." to the end for Modality
+            if (elementId.includes('modality')) {
+                const itemsToMoveToEnd = ['Both Options are fine.'];
+                const regularItems = optionValues.filter(opt => !itemsToMoveToEnd.includes(opt));
+                const specialItems = optionValues.filter(opt => itemsToMoveToEnd.includes(opt));
+                optionValues = [...regularItems, ...specialItems];
+            }
+
+            // Render sorted options
+            optionValues.forEach(val => {
+                const option = document.createElement('option');
+                option.value = val;
+                option.text = val;
+                select.appendChild(option);
+            });
+        } else {
+            const option = document.createElement('option');
+            option.text = "No options found";
+            option.disabled = true;
+            select.appendChild(option);
+        }
+    }
+
+    // Fill select dropdown for teacher fields
+    function fillTeacherSelect(selectElement, columnId, optionsMap) {
+        if (!selectElement) return;
+
+        // Clear existing options except the first placeholder
+        while (selectElement.options.length > 1) {
+            selectElement.remove(1);
+        }
+
+        const options = optionsMap && optionsMap[columnId] ? optionsMap[columnId].labels : null;
+
+        if (options && options.length > 0) {
+            // Get all option values
+            let optionValues = options.map(opt => opt.name || opt);
+
+            // Custom sorting: move "Both options are fine." to the end for Modality
+            if (columnId === 'status__1') { // Modality column
+                const itemsToMoveToEnd = ['Both options are fine.'];
+                const regularItems = optionValues.filter(opt => !itemsToMoveToEnd.includes(opt));
+                const specialItems = optionValues.filter(opt => itemsToMoveToEnd.includes(opt));
+                optionValues = [...regularItems, ...specialItems];
+            }
+
+            // Render sorted options
+            optionValues.forEach(val => {
+                const option = document.createElement('option');
+                option.value = val;
+                option.text = val;
+                selectElement.appendChild(option);
+            });
+        } else {
+            const option = document.createElement('option');
+            option.text = "No options found";
+            option.disabled = true;
+            selectElement.appendChild(option);
+        }
+    }
+
+    // Update teacher counter
+    function updateCounter() {
+        const count = document.querySelectorAll('.teacher-row').length;
+        document.getElementById('teacherCounter').textContent = `Total added: ${count}`;
+    }
+
+    // Populate checkboxes in all teacher rows
+    function populateTeacherCheckboxes() {
+        if (!globalDropdownOptions) return;
+
+        const teacherRows = document.querySelectorAll('.teacher-row');
+        teacherRows.forEach(row => {
+            // Using parent board column IDs (these exist and have the data)
+            renderTeacherCheckboxes(row.querySelector('[name="t_gradeLevels"]'), 'dropdown_mkzc6dgm', globalDropdownOptions);
+            renderTeacherCheckboxes(row.querySelector('[name="t_languages"]'), 'dropdown_mkzcbcq4', globalDropdownOptions); // Added Languages
+            renderTeacherCheckboxes(row.querySelector('[name="t_llnServices"]'), 'dropdown_mkt67ese', globalDropdownOptions);
+            renderTeacherCheckboxes(row.querySelector('[name="t_humanities"]'), 'dropdown_mm02xrpn', globalDropdownOptions);
+            renderTeacherCheckboxes(row.querySelector('[name="t_stem"]'), 'dropdown_mm02azn5', globalDropdownOptions);
+            renderTeacherCheckboxes(row.querySelector('[name="t_sped"]'), 'dropdown_mm02m53x', globalDropdownOptions);
+            renderTeacherCheckboxes(row.querySelector('[name="t_paraprofessional"]'), 'dropdown_mm02v870', globalDropdownOptions);
+
+            // Populate status dropdowns (Modality) - Certification is now global
+            fillTeacherSelect(row.querySelector('[name="t_modality"]'), 'status__1', globalDropdownOptions);
+        });
+    }
+    // Render checkboxes for teacher fields
+    function renderTeacherCheckboxes(container, columnId, optionsMap) {
+        if (!container) return;
+        container.innerHTML = '';
+        if (optionsMap && optionsMap[columnId] && optionsMap[columnId].labels) {
+            let options = optionsMap[columnId].labels.map(opt => opt.name || opt);
+
+            // Special handling for Grade Levels (dropdown_mkzc6dgm)
+            if (columnId === 'dropdown_mkzc6dgm') {
+                const excludedLabels = [
+                    "Primary grade levels - PreK to 4th",
+                    "Intermediate grade levels - 5th to 8th",
+                    "Upper grade levels - 9th to 12th"
+                ];
+
+                // Filter out excluded labels
+                options = options.filter(opt => !excludedLabels.includes(opt));
+
+                // Custom sort order
+                const gradeOrder = [
+                    "Pre-K", "K", "1st Grade", "2nd Grade", "3rd Grade", "4th Grade",
+                    "5th Grade", "6th Grade", "7th Grade", "8th Grade",
+                    "9th Grade", "10th Grade", "11th Grade", "12th Grade"
+                ];
+
+                options.sort((a, b) => {
+                    return gradeOrder.indexOf(a) - gradeOrder.indexOf(b);
+                });
+            }
+
+            // Special handling for Languages (dropdown_mkzcbcq4)
+            if (columnId === 'dropdown_mkzcbcq4') {
+                options = options.filter(opt => opt !== "Other");
+            }
+            if (columnId === 'dropdown_mkt67ese') {
+                // Special handling for LLN Services (renamed to Language acquisition)
+                const allowedLabels = [
+                    "World language",
+                    "Dual-language",
+                    "ESL",
+                    "Bilingual education",
+                    "Other"
+                ];
+
+                // Filter options to only include allowed labels
+                options = options.filter(opt => allowedLabels.includes(opt));
+            } else {
+                // Default handling for other fields
+                const itemsToMoveToEnd = ['NA', 'Other'];
+                const regularItems = options.filter(opt => !itemsToMoveToEnd.includes(opt));
+                const specialItems = options.filter(opt => itemsToMoveToEnd.includes(opt));
+                options = [...regularItems, ...specialItems];
+            }
+
+            options.forEach(val => {
+                const wrapper = document.createElement('label');
+                wrapper.className = "flex items-start p-2 rounded hover:bg-gray-50 cursor-pointer transition-colors checkbox-label";
+                wrapper.innerHTML = `
+          <div class="flex items-center h-5">
+            <input type="checkbox" value="${val}" class="w-4 h-4 text-brand bg-gray-100 border-gray-300 rounded focus:ring-brand focus:ring-2">
+          </div>
+          <div class="ml-3 text-sm">
+            <span class="font-medium text-gray-700 select-none">${val}</span>
+          </div>`;
+                container.appendChild(wrapper);
+            });
+        }
+    }
+
+
+
+    // Toggle individual teacher section
+    // Check if a teacher section has empty required fields
+    function hasEmptyRequiredFields(teacherRow) {
+        // Special check for Teaching Schedule (Text OR File)
+        const scheduleText = teacherRow.querySelector('[name="t_teachingSchedule"]');
+        const scheduleFile = teacherRow.querySelector('[name="t_teachingScheduleFile"]');
+
+        const hasScheduleText = scheduleText && scheduleText.value.trim().length > 0;
+        const hasScheduleFile = scheduleFile && scheduleFile.files.length > 0;
+
+        if (!hasScheduleText && !hasScheduleFile) {
+            return true;
+        }
+
+        // Check other required textareas
+        const requiredTextareas = teacherRow.querySelectorAll('textarea[required]');
+        for (let textarea of requiredTextareas) {
+            if (!textarea.value.trim()) {
+                return true;
+            }
+        }
+
+        // Check required inputs
+        const requiredInputs = teacherRow.querySelectorAll('input[required]');
+        for (let input of requiredInputs) {
+            if (!input.value.trim()) {
+                return true;
+            }
+        }
+
+        // Check required selects
+        const requiredSelects = teacherRow.querySelectorAll('select[required]');
+        for (let select of requiredSelects) {
+            if (!select.value || select.value === '') {
+                return true;
+            }
+        }
+
+        // Check required checkboxes (at least one must be checked for each group)
+        const checkboxGroups = ['t_gradeLevels', 't_llnServices', 't_languages']; // Grade, Language Acquisition, and Languages are required
+        for (let groupName of checkboxGroups) {
+            const container = teacherRow.querySelector(`[name="${groupName}"]`);
+            if (container) {
+                const checkedBoxes = container.querySelectorAll('input[type="checkbox"]:checked');
+                if (checkedBoxes.length === 0) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    function toggleTeacher(headerElement) {
+        const teacherRow = headerElement.closest('.teacher-row');
+        const content = teacherRow.querySelector('.teacher-content');
+        const chevron = teacherRow.querySelector('.chevron-icon');
+
+        // If currently collapsed, expand this one and collapse all others
+        if (content.classList.contains('collapsed')) {
+            collapseAllTeachers();
+            content.classList.remove('collapsed');
+            chevron.style.transform = 'rotate(0deg)';
+        } else {
+            // Allow collapsing regardless of validation state
+            content.classList.add('collapsed');
+            chevron.style.transform = 'rotate(-90deg)';
+        }
+    }
+
+    // Collapse all teacher sections (only those with complete required fields)
+    function collapseAllTeachers() {
+        document.querySelectorAll('.teacher-row').forEach(row => {
+            const content = row.querySelector('.teacher-content');
+            const chevron = row.querySelector('.chevron-icon');
+
+            // Only collapse if all required fields are filled
+            if (content && chevron && !hasEmptyRequiredFields(row)) {
+                content.classList.add('collapsed');
+                chevron.style.transform = 'rotate(-90deg)';
+            }
+        });
+    }
+
+
+
+
+
+
+
+    // Add teacher row
+    function addTeacherRow() {
+        const container = document.getElementById('teachersContainer');
+        const template = document.getElementById('teacherTemplate');
+        const clone = template.content.cloneNode(true);
+
+        const count = container.querySelectorAll('.teacher-row').length + 1;
+        clone.querySelector('.teacher-header').textContent = 'Teacher ' + count;
+
+        // Collapse all existing teachers before adding new one
+        collapseAllTeachers();
+
+        container.appendChild(clone);
+        updateCounter();
+
+        // Populate checkboxes and dropdowns ONLY in the newly added row
+        const newRow = container.lastElementChild;
+        if (globalDropdownOptions && newRow) {
+            renderTeacherCheckboxes(newRow.querySelector('[name="t_gradeLevels"]'), 'dropdown_mkzc6dgm', globalDropdownOptions);
+            renderTeacherCheckboxes(newRow.querySelector('[name="t_languages"]'), 'dropdown_mkzcbcq4', globalDropdownOptions); // Added Languages
+            renderTeacherCheckboxes(newRow.querySelector('[name="t_llnServices"]'), 'dropdown_mkt67ese', globalDropdownOptions);
+            // renderTeacherCheckboxes(newRow.querySelector('[name="t_regServices"]'), 'dropdown_mkt6gc13', globalDropdownOptions); // Removed regServices
+            renderTeacherCheckboxes(newRow.querySelector('[name="t_humanities"]'), 'dropdown_mm02xrpn', globalDropdownOptions);
+            renderTeacherCheckboxes(newRow.querySelector('[name="t_stem"]'), 'dropdown_mm02azn5', globalDropdownOptions);
+            renderTeacherCheckboxes(newRow.querySelector('[name="t_sped"]'), 'dropdown_mm02m53x', globalDropdownOptions);
+            renderTeacherCheckboxes(newRow.querySelector('[name="t_paraprofessional"]'), 'dropdown_mm02v870', globalDropdownOptions);
+
+            fillTeacherSelect(newRow.querySelector('[name="t_modality"]'), 'status__1', globalDropdownOptions);
+        }
+
+        // Add focus listener to collapse School Info when teacher fields are focused
+
+
+        // Attach listeners for date calculations
+        attachDateListeners(newRow);
+
+        // Attach listener for teaching schedule file
+        const fileInput = newRow.querySelector('[name="t_teachingScheduleFile"]');
+        const fileLabel = newRow.querySelector('[data-file-label]');
+
+        if (fileInput) {
+            fileInput.addEventListener('change', function () {
+                if (this.files.length > 0) {
+                    fileLabel.textContent = this.files[0].name;
+                    fileLabel.classList.remove('hidden');
+                } else {
+                    fileLabel.textContent = '';
+                    fileLabel.classList.add('hidden');
+                }
+            });
+        }
+
+        // Add focus listener to collapse School Info when teacher fields are focused
+
+
+        // Attach listeners for date calculations
+        attachDateListeners(newRow);
+    }
+
+    // Attach listeners for date calculation
+    function attachDateListeners(row) {
+        const startInput = row.querySelector('[name="t_startDate"]');
+        const endInput = row.querySelector('[name="t_lastDay"]');
+        const daysInput = row.querySelector('[name="t_instructionalDays"]');
+
+        const calculate = () => {
+            const days = calculateDays(startInput.value, endInput.value);
+            daysInput.value = days;
+        };
+
+        if (startInput) startInput.addEventListener('change', calculate);
+        if (endInput) endInput.addEventListener('change', calculate);
+    }
+
+
+
+    // Save form data as draft to localStorage
+    function saveDraft() {
+        try {
+            const draftData = {
+                timestamp: new Date().toISOString(),
+                schoolInfo: {
+                    schoolName: document.getElementById('schoolName').value,
+                    address: document.getElementById('address').value,
+                    title: document.getElementById('title').value,
+                    fullName: document.getElementById('fullName').value,
+                    phoneNumber: document.getElementById('phoneNumber').value,
+                    phoneExtension: document.getElementById('phoneExtension').value,
+                    email: document.getElementById('email').value,
+                    additionalInfo: document.getElementById('additionalInfo').value
+                },
+                teachers: [],
+                tbdMode: !document.getElementById('tbdContainer').classList.contains('hidden')
+            };
+
+            // If TBD mode, just save the number
+            if (draftData.tbdMode) {
+                draftData.numberOfTeachers = document.getElementById('numberOfTeachers').value;
+            } else {
+                // Collect all teacher data
+                document.querySelectorAll('.teacher-row').forEach((row, index) => {
+                    const teacher = {
+                        description: row.querySelector('[name="t_desc"]').value,
+                        teachingSchedule: row.querySelector('[name="t_teachingSchedule"]').value,
+                        duties: row.querySelector('[name="t_duties"]').value,
+                        annualSalary: row.querySelector('[name="t_annualSalary"]').value,
+                        proratedSalary: row.querySelector('[name="t_proratedSalary"]').value,
+                        startDate: row.querySelector('[name="t_startDate"]').value,
+                        lastDay: row.querySelector('[name="t_lastDay"]').value,
+                        instructionalDays: row.querySelector('[name="t_instructionalDays"]').value,
+                        instructionalDays: row.querySelector('[name="t_instructionalDays"]').value,
+                        // certification: row.querySelector('[name="t_certification"]').value, // Removed from teacher row
+                        modality: row.querySelector('[name="t_modality"]').value,
+                        gradeLevels: [],
+                        llnServices: [],
+                        languages: [],
+                        regServices: []
+                    };
+
+                    // Collect checked checkboxes
+                    row.querySelectorAll('[name="t_gradeLevels"] input:checked').forEach(cb => {
+                        teacher.gradeLevels.push(cb.value);
+                    });
+                    row.querySelectorAll('[name="t_llnServices"] input:checked').forEach(cb => {
+                        teacher.llnServices.push(cb.value);
+                    });
+                    row.querySelectorAll('[name="t_languages"] input:checked').forEach(cb => {
+                        teacher.languages.push(cb.value);
+                    });
+                    row.querySelectorAll('[name="t_regServices"] input:checked').forEach(cb => {
+                        teacher.regServices.push(cb.value);
+                    });
+
+                    draftData.teachers.push(teacher);
+                });
+            }
+
+            localStorage.setItem('formDraft', JSON.stringify(draftData));
+
+            // Check if files are uploaded to show appropriate message
+            const bellSchedule = document.getElementById('bellSchedule');
+            const calendar = document.getElementById('calendar');
+            const hasFiles = (bellSchedule && bellSchedule.files.length > 0) ||
+                (calendar && calendar.files.length > 0);
+
+            // Show success toast with file reminder if needed
+            if (hasFiles) {
+                showDraftToast('Draft saved! Remember to re-upload files when you return.', 'success', 5000);
+            } else {
+                showDraftToast('Draft saved successfully!', 'success');
+            }
+            checkForDraft(); // Update notification
+
+        } catch (error) {
+            console.error('Error saving draft:', error);
+            showDraftToast('Error saving draft', 'error');
+        }
+    }
+
+    // Load draft from localStorage
+    function loadDraft() {
+        try {
+            const draftJson = localStorage.getItem('formDraft');
+            if (!draftJson) return;
+
+            const draft = JSON.parse(draftJson);
+
+            // Load school info
+            document.getElementById('schoolName').value = draft.schoolInfo.schoolName || '';
+            document.getElementById('address').value = draft.schoolInfo.address || '';
+            document.getElementById('title').value = draft.schoolInfo.title || '';
+            document.getElementById('fullName').value = draft.schoolInfo.fullName || '';
+            document.getElementById('phoneNumber').value = draft.schoolInfo.phoneNumber || '';
+            document.getElementById('phoneExtension').value = draft.schoolInfo.phoneExtension || '';
+            document.getElementById('email').value = draft.schoolInfo.email || '';
+            document.getElementById('additionalInfo').value = draft.schoolInfo.additionalInfo || '';
+
+            // Handle TBD mode
+            if (draft.tbdMode) {
+                document.getElementById('tbdCheckbox').checked = true;
+                toggleTBD();
+                document.getElementById('numberOfTeachers').value = draft.numberOfTeachers || '';
+            } else {
+                // Clear existing teachers
+                document.getElementById('teachersContainer').innerHTML = '';
+
+                // Load each teacher
+                draft.teachers.forEach((teacher, index) => {
+                    addTeacherRow();
+                    const row = document.querySelectorAll('.teacher-row')[index];
+
+                    row.querySelector('[name="t_desc"]').value = teacher.description || '';
+                    row.querySelector('[name="t_teachingSchedule"]').value = teacher.teachingSchedule || '';
+                    row.querySelector('[name="t_duties"]').value = teacher.duties || '';
+                    row.querySelector('[name="t_annualSalary"]').value = teacher.annualSalary || '';
+                    row.querySelector('[name="t_proratedSalary"]').value = teacher.proratedSalary || '';
+                    row.querySelector('[name="t_startDate"]').value = teacher.startDate || '';
+                    row.querySelector('[name="t_lastDay"]').value = teacher.lastDay || '';
+                    row.querySelector('[name="t_instructionalDays"]').value = teacher.instructionalDays || '';
+                    row.querySelector('[name="t_certification"]').value = teacher.certification || '';
+                    row.querySelector('[name="t_modality"]').value = teacher.modality || '';
+
+                    // Restore checked checkboxes
+                    teacher.gradeLevels.forEach(val => {
+                        const cb = row.querySelector(`[name="t_gradeLevels"] input[value="${val}"]`);
+                        if (cb) cb.checked = true;
+                    });
+                    teacher.llnServices.forEach(val => {
+                        const cb = row.querySelector(`[name="t_llnServices"] input[value="${val}"]`);
+                        if (cb) cb.checked = true;
+                    });
+                    teacher.languages.forEach(val => {
+                        const cb = row.querySelector(`[name="t_languages"] input[value="${val}"]`);
+                        if (cb) cb.checked = true;
+                    });
+                    teacher.regServices.forEach(val => {
+                        const cb = row.querySelector(`[name="t_regServices"] input[value="${val}"]`);
+                        if (cb) cb.checked = true;
+                    });
+                });
+            }
+
+            showDraftToast('Draft loaded successfully!', 'success');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        } catch (error) {
+            console.error('Error loading draft:', error);
+            showDraftToast('Error loading draft', 'error');
+        }
+    }
+
+    // Clear saved draft
+    function clearDraft() {
+        if (confirm('Are you sure you want to delete your saved draft? This cannot be undone.')) {
+            try {
+                localStorage.removeItem('formDraft');
+                document.getElementById('draftNotification').classList.add('hidden');
+                showDraftToast('Draft cleared successfully', 'success');
+            } catch (error) {
+                console.error('Error clearing draft:', error);
+                showDraftToast('Error clearing draft', 'error');
+            }
+        }
+    }
+
+    // Check if draft exists and show notification
+    function checkForDraft() {
+        const draftJson = localStorage.getItem('formDraft');
+        if (draftJson) {
+            try {
+                const draft = JSON.parse(draftJson);
+                const notification = document.getElementById('draftNotification');
+                const dateSpan = document.getElementById('draftDate');
+
+                const date = new Date(draft.timestamp);
+                dateSpan.textContent = date.toLocaleDateString() + ' at ' + date.toLocaleTimeString();
+
+                notification.classList.remove('hidden');
+            } catch (error) {
+                console.error('Error checking draft:', error);
+            }
+        }
+    }
+
+    // Show draft toast notification
+    function showDraftToast(message, type, duration = 3000) {
+        const toast = document.createElement('div');
+        toast.className = `fixed top-20 right-4 z-50 px-6 py-3 rounded-lg shadow-xl transition-all duration-300 max-w-sm ${type === 'success'
+            ? 'bg-green-500 text-white'
+            : 'bg-red-500 text-white'
+            }`;
+        toast.innerHTML = `
+      <div class="flex items-center gap-2">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${type === 'success'
+                ? 'M5 13l4 4L19 7'
+                : 'M6 18L18 6M6 6l12 12'
+            }"></path>
+        </svg>
+        <span class="font-medium text-sm">${message}</span>
+      </div>
+    `;
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }, duration);
+    }
+
+    // Remove teacher row
+    function removeTeacher(btn) {
+        const row = btn.closest('.teacher-row');
+        const container = document.getElementById('teachersContainer');
+
+        if (container.children.length > 1) {
+            row.remove();
+        } else {
+            row.querySelectorAll('input, textarea').forEach(i => i.value = '');
+        }
+
+        const rows = container.querySelectorAll('.teacher-row');
+        rows.forEach((r, index) => {
+            r.querySelector('.teacher-header').textContent = 'Teacher ' + (index + 1);
+        });
+
+        updateCounter();
+    }
+
+    // Update file name display
+    // Error handler
+    function handleError(error) {
+        alert("Error loading data: " + error.message);
+    }
+
+    // Validation functions
+    function isValidEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+    }
+
+    function isValidAddress(address) {
+        return address && address.trim().length >= 10;
+    }
+
+    // Form submission
+    document.getElementById('appForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const btn = document.getElementById('submitBtn');
+
+        const getVal = (id) => document.getElementById(id).value;
+        const getMultiVal = (containerId) => {
+            const checkboxes = document.querySelectorAll(`#${containerId} input[type="checkbox"]:checked`);
+            return Array.from(checkboxes).map(cb => cb.value);
+        };
+
+        // Validation
+        const email = getVal('email');
+        const emailError = document.getElementById('emailError');
+        if (!isValidEmail(email)) {
+            document.getElementById('email').classList.add('border-red-500', 'focus:ring-red-500');
+            emailError.classList.remove('hidden');
+            document.getElementById('email').focus();
+            return;
+        } else {
+            document.getElementById('email').classList.remove('border-red-500', 'focus:ring-red-500');
+            emailError.classList.add('hidden');
+        }
+
+        const address = getVal('address');
+        const addressError = document.getElementById('addressError');
+        if (!isValidAddress(address)) {
+            document.getElementById('address').classList.add('border-red-500', 'focus:ring-red-500');
+            addressError.classList.remove('hidden');
+            document.getElementById('address').focus();
+            return;
+        } else {
+            document.getElementById('address').classList.remove('border-red-500', 'focus:ring-red-500');
+            addressError.classList.add('hidden');
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<div class="loader mr-3"></div> Submitting response...';
+        btn.classList.add('opacity-75', 'cursor-not-allowed');
+
+        try {
+            const isTbd = document.getElementById('tbdCheckbox').checked;
+            const teachersList = [];
+            let numberOfTeachersVal = "";
+
+            if (isTbd) {
+                numberOfTeachersVal = document.getElementById('tbdDescription').value;
+            } else {
+                const rows = document.querySelectorAll('.teacher-row');
+                numberOfTeachersVal = rows.length.toString();
+
+                for (let i = 0; i < rows.length; i++) {
+                    const row = rows[i];
+                    const teacherNumber = i + 1;
+                    const teacherName = `Teacher ${teacherNumber}`;
+                    const desc = row.querySelector('[name="t_desc"]').value;
+
+                    // Collect checkboxes for each teacher
+                    const getTeacherCheckboxes = (containerName) => {
+                        const container = row.querySelector(`[name="${containerName}"]`);
+                        if (!container) return [];
+                        const checkboxes = container.querySelectorAll('input[type="checkbox"]:checked');
+                        return Array.from(checkboxes).map(cb => cb.value);
+                    };
+
+                    const gradeLevels = getTeacherCheckboxes('t_gradeLevels');
+                    const llnServices = getTeacherCheckboxes('t_llnServices');
+                    const languages = getTeacherCheckboxes('t_languages');
+                    const regServices = getTeacherCheckboxes('t_regServices');
+                    const startDate = row.querySelector('[name="t_startDate"]').value;
+                    const lastDay = row.querySelector('[name="t_lastDay"]').value;
+                    const instructionalDays = row.querySelector('[name="t_instructionalDays"]').value;
+                    const certification = row.querySelector('[name="t_certification"]').value;
+                    const modality = row.querySelector('[name="t_modality"]').value;
+                    const teachingSchedule = row.querySelector('[name="t_teachingSchedule"]').value;
+                    const duties = row.querySelector('[name="t_duties"]').value;
+                    const annualSalary = row.querySelector('[name="t_annualSalary"]').value;
+                    const proratedSalary = row.querySelector('[name="t_proratedSalary"]').value;
+                    const campusName = row.querySelector('[name="t_campusName"]').value;
+                    const campusAddress = row.querySelector('[name="t_campusAddress"]').value;
+
+                    // Handle file upload for teacher schedule
+                    const scheduleFileInput = row.querySelector('[name="t_teachingScheduleFile"]');
+                    let scheduleFileName = null;
+                    let scheduleMimeType = null;
+                    let scheduleFileData = null;
+
+                    if (scheduleFileInput && scheduleFileInput.files.length > 0) {
+                        const file = scheduleFileInput.files[0];
+                        scheduleFileName = file.name;
+                        scheduleMimeType = file.type;
+                        scheduleFileData = await readFileAsBase64(file);
+                    }
+
+                    // Validate Teaching Schedule (Text OR File)
+                    if (!teachingSchedule.trim() && !scheduleFileName) {
+                        showDraftToast(`Please provide a Teaching Schedule (Text or File) for ${teacherName}`, 'error', 5000);
+                        btn.disabled = false;
+                        btn.innerHTML = 'Submit Response';
+                        btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                        return;
+                    }
+
+                    // Validate teacher fields
+                    if (gradeLevels.length === 0) {
+                        showDraftToast(`Please select at least one Grade Level for ${teacherName}`, 'error', 5000);
+                        btn.disabled = false;
+                        btn.innerHTML = 'Submit Response';
+                        btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                        return;
+                    }
+                    if (llnServices.length === 0) {
+                        showDraftToast(`Please select at least one Language Acquisition for ${teacherName}`, 'error', 5000);
+                        btn.disabled = false;
+                        btn.innerHTML = 'Submit Response';
+                        btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                        return;
+                    }
+                    if (languages.length === 0) {
+                        showDraftToast(`Please select at least one Language for ${teacherName}`, 'error', 5000);
+                        btn.disabled = false;
+                        btn.innerHTML = 'Submit Response';
+                        btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                        return;
+                    }
+
+                    teachersList.push({
+                        name: teacherName,
+                        teacherNumber: teacherNumber,
+                        description: desc,
+                        teachingSchedule: teachingSchedule,
+                        teachingScheduleFileName: scheduleFileName,
+                        teachingScheduleMimeType: scheduleMimeType,
+                        teachingScheduleFileData: scheduleFileData,
+                        duties: duties,
+                        annualSalary: annualSalary,
+                        proratedSalary: proratedSalary,
+                        gradeLevels: gradeLevels,
+                        llnServices: llnServices,
+                        languages: languages,
+                        regServices: regServices,
+                        startDate: startDate,
+                        lastDay: lastDay,
+                        instructionalDays: instructionalDays,
+                        certification: certification,
+                        modality: modality,
+                        campusName: campusName,
+                        campusAddress: campusAddress
+                    });
+                }
+            }
+
+            if (isTbd) {
+                // Logic remains same
+            }
+
+            // Handle calendar (File or Text)
+            const calendarType = document.querySelector('input[name="calendarType"]:checked').value;
+            let calendarFileName = null;
+            let calendarMimeType = null;
+            let calendarFileData = null;
+            let calendarText = null;
+
+            if (calendarType === 'file') {
+                const calendarInput = document.getElementById('calendar');
+                if (calendarInput.files.length > 0) {
+                    const calendarFile = calendarInput.files[0];
+                    calendarFileName = calendarFile.name;
+                    calendarMimeType = calendarFile.type;
+                    calendarFileData = await readFileAsBase64(calendarFile);
+                } else {
+                    // Validation failed if file mode selected but no file
+                    throw new Error("Please upload a School Calendar file or switch to Text entry.");
+                }
+            } else {
+                calendarText = document.getElementById('calendarText').value;
+                if (!calendarText || !calendarText.trim()) {
+                    throw new Error("Please enter School Calendar text or switch to File upload.");
+                }
+            }
+
+            // Handle bell schedule (File or Text)
+            const bellScheduleType = document.querySelector('input[name="bellScheduleType"]:checked').value;
+            let bellScheduleFileName = null;
+            let bellScheduleMimeType = null;
+            let bellScheduleFileData = null;
+            let bellScheduleText = null;
+
+            if (bellScheduleType === 'file') {
+                const bellScheduleInput = document.getElementById('bellSchedule');
+                if (bellScheduleInput.files.length > 0) {
+                    const bellScheduleFile = bellScheduleInput.files[0];
+                    bellScheduleFileName = bellScheduleFile.name;
+                    bellScheduleMimeType = bellScheduleFile.type;
+                    bellScheduleFileData = await readFileAsBase64(bellScheduleFile);
+                } else {
+                    throw new Error("Please upload a Bell Schedule file or switch to Text entry.");
+                }
+            } else {
+                bellScheduleText = document.getElementById('bellScheduleText').value;
+                if (!bellScheduleText || !bellScheduleText.trim()) {
+                    throw new Error("Please enter Bell Schedule text or switch to File upload.");
+                }
+            }
+
+            // Merge title with full name
+            const title = getVal('title');
+            const fullName = getVal('fullName');
+            const fullNameWithTitle = title ? `${title} ${fullName}` : fullName;
+
+            // Merge phone number with extension
+            const phoneNumber = getVal('phoneNumber');
+            const phoneExtension = getVal('phoneExtension');
+            const phoneWithExt = phoneExtension ? `${phoneNumber} ext. ${phoneExtension}` : phoneNumber;
+
+            const schoolData = {
+                schoolName: getVal('schoolName'),
+                fullName: fullNameWithTitle,
+                address: address,
+                email: email,
+                phone: phoneWithExt,
+                bellScheduleFileName: bellScheduleFileName,
+                bellScheduleMimeType: bellScheduleMimeType,
+                bellScheduleFileData: bellScheduleFileData,
+                bellScheduleText: bellScheduleText,
+                calendarFileName: calendarFileName,
+                calendarMimeType: calendarMimeType,
+                calendarFileData: calendarFileData,
+                calendarText: calendarText,
+                additionalInfo: getVal('additionalInfo'),
+                calendarText: calendarText,
+                additionalInfo: getVal('additionalInfo'),
+                numberOfTeachers: numberOfTeachersVal,
+                certification: getVal('certification') // Added Global Certification
+            };
+
+            // Show loading modal
+            document.getElementById('submissionModal').classList.remove('hidden');
+
+            google.script.run
+                .withSuccessHandler((response) => {
+                    document.getElementById('submissionModal').classList.add('hidden');
+                    btn.disabled = false;
+                    btn.innerHTML = 'Submit Response';
+                    btn.classList.remove('opacity-75', 'cursor-not-allowed');
+
+                    if (response.success) {
+                        // Clear saved draft
+                        localStorage.removeItem('formDraft');
+                        document.getElementById('draftNotification').classList.add('hidden');
+
+                        // Hide Form and Show Success View
+                        document.getElementById('mainFormContainer').classList.add('hidden');
+                        document.getElementById('successView').classList.remove('hidden');
+
+                        // Scroll to top
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                })
+                .withFailureHandler((err) => {
+                    document.getElementById('submissionModal').classList.add('hidden');
+                    btn.disabled = false;
+                    btn.innerHTML = 'Submit Response';
+                    btn.classList.remove('opacity-75', 'cursor-not-allowed');
+
+                    // Show error toast in header
+                    const errorToast = document.getElementById('errorToast');
+                    const errorMessage = document.getElementById('errorToastMessage');
+                    errorMessage.textContent = err.message || 'An unexpected error occurred.';
+                    errorToast.classList.remove('hidden');
+
+                    // Scroll to top to ensure toast is visible
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                    // Hide toast after 7 seconds (longer for errors)
+                    setTimeout(() => {
+                        errorToast.classList.add('hidden');
+                    }, 7000);
+                })
+                .processApplication({ schoolData, teachers: teachersList });
+
+        } catch (error) {
+            document.getElementById('submissionModal').classList.add('hidden');
+            console.error(error);
+            btn.disabled = false;
+            btn.innerHTML = 'Submit Response';
+            btn.classList.remove('opacity-75', 'cursor-not-allowed');
+            alert("Client Error: " + error.message);
+        }
+    });
+
+    // Read file as base64
+    function readFileAsBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const result = reader.result;
+                const base64 = result.split(',')[1];
+                resolve(base64);
+            };
+            reader.onerror = error => reject(error);
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Flexible Input Toggle
+    function toggleInputType(field, type) {
+        const fileContainer = document.getElementById(`${field}FileContainer`);
+        const textContainer = document.getElementById(`${field}TextContainer`);
+
+        if (type === 'file') {
+            fileContainer.classList.remove('hidden');
+            textContainer.classList.add('hidden');
+        } else {
+            fileContainer.classList.add('hidden');
+            textContainer.classList.remove('hidden');
+        }
+    }
+</script>

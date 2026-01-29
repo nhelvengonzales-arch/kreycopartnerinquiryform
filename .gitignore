@@ -1,0 +1,6 @@
+.clasp.json
+.DS_Store
+*.code-workspace
+Preview Folder/
+PreviewIndex.html
+PreviewEmail.html
