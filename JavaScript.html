@@ -624,7 +624,8 @@
                     phoneNumber: document.getElementById('phoneNumber').value,
                     phoneExtension: document.getElementById('phoneExtension').value,
                     email: document.getElementById('email').value,
-                    additionalInfo: document.getElementById('additionalInfo').value
+                    additionalInfo: document.getElementById('additionalInfo').value,
+                    certification: document.getElementById('certification').value // Added Global Certification
                 },
                 teachers: [],
                 tbdMode: !document.getElementById('tbdContainer').classList.contains('hidden')
@@ -632,7 +633,7 @@
 
             // If TBD mode, just save the number
             if (draftData.tbdMode) {
-                draftData.numberOfTeachers = document.getElementById('numberOfTeachers').value;
+                draftData.numberOfTeachers = document.getElementById('tbdDescription').value;
             } else {
                 // Collect all teacher data
                 document.querySelectorAll('.teacher-row').forEach((row, index) => {
@@ -711,6 +712,7 @@
             document.getElementById('phoneExtension').value = draft.schoolInfo.phoneExtension || '';
             document.getElementById('email').value = draft.schoolInfo.email || '';
             document.getElementById('additionalInfo').value = draft.schoolInfo.additionalInfo || '';
+            document.getElementById('certification').value = draft.schoolInfo.certification || ''; // Restore Global Certification
 
             // Handle TBD mode
             if (draft.tbdMode) {
@@ -734,7 +736,7 @@
                     row.querySelector('[name="t_startDate"]').value = teacher.startDate || '';
                     row.querySelector('[name="t_lastDay"]').value = teacher.lastDay || '';
                     row.querySelector('[name="t_instructionalDays"]').value = teacher.instructionalDays || '';
-                    row.querySelector('[name="t_certification"]').value = teacher.certification || '';
+                    // row.querySelector('[name="t_certification"]').value = teacher.certification || ''; // Removed from teacher row
                     row.querySelector('[name="t_modality"]').value = teacher.modality || '';
 
                     // Restore checked checkboxes
@@ -933,7 +935,7 @@
                     const startDate = row.querySelector('[name="t_startDate"]').value;
                     const lastDay = row.querySelector('[name="t_lastDay"]').value;
                     const instructionalDays = row.querySelector('[name="t_instructionalDays"]').value;
-                    const certification = row.querySelector('[name="t_certification"]').value;
+                    // const certification = row.querySelector('[name="t_certification"]').value; // Removed - global now
                     const modality = row.querySelector('[name="t_modality"]').value;
                     const teachingSchedule = row.querySelector('[name="t_teachingSchedule"]').value;
                     const duties = row.querySelector('[name="t_duties"]').value;
@@ -1005,7 +1007,7 @@
                         startDate: startDate,
                         lastDay: lastDay,
                         instructionalDays: instructionalDays,
-                        certification: certification,
+                        certification: getVal('certification'), // Use global certification
                         modality: modality,
                         campusName: campusName,
                         campusAddress: campusAddress
