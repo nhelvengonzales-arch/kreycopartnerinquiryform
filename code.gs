@@ -74,7 +74,6 @@ function getBoardDropdownOptions() {
     query {
       boards (ids: ${config.boardId}) {
         columns (ids: [
-          "dropdown_mkt67ese",  # Language acquisition
           "color_mksnhewa",     # Certification (status column)
           "status__1"           # Modality Preference (status column)
         ]) {
@@ -101,7 +100,9 @@ function getBoardDropdownOptions() {
                   "dropdown_mm02azn5",  # STEM
                   "dropdown_mm02m53x",  # SPED
                   "dropdown_mm02v870",  # Paraprofessional support
-                  "dropdown_mkzcbcq4"   # Languages
+                  "dropdown_mm02v870",  # Paraprofessional support
+                  "dropdown_mkzcbcq4",  # Languages
+                  "dropdown_mkzcq8h6"   # Language acquisition
                 ]) {
                   id
                   title
