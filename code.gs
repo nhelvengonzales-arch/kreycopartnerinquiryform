@@ -549,9 +549,7 @@ function createSubitem(parentId, teacher) {
     columnValues["dropdown_mkzcbcq4"] = { labels: teacher.languages };
   }
 
-  if (teacher.certification) {
-    columnValues["color_mkzcwqdn"] = { label: teacher.certification };
-  }
+
   if (teacher.modality) {
     columnValues["color_mkzcn0h2"] = { label: teacher.modality };
   }
