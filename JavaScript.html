@@ -422,25 +422,11 @@
             if (columnId === 'dropdown_mkzcbcq4') {
                 options = options.filter(opt => opt !== "Other");
             }
-            if (columnId === 'dropdown_mkt67ese') {
-                // Special handling for LLN Services (renamed to Language acquisition)
-                const allowedLabels = [
-                    "World language",
-                    "Dual-language",
-                    "ESL",
-                    "Bilingual education",
-                    "Other"
-                ];
-
-                // Filter options to only include allowed labels
-                options = options.filter(opt => allowedLabels.includes(opt));
-            } else {
-                // Default handling for other fields
-                const itemsToMoveToEnd = ['NA', 'Other'];
-                const regularItems = options.filter(opt => !itemsToMoveToEnd.includes(opt));
-                const specialItems = options.filter(opt => itemsToMoveToEnd.includes(opt));
-                options = [...regularItems, ...specialItems];
-            }
+            // Default handling for other fields
+            const itemsToMoveToEnd = ['NA', 'Other'];
+            const regularItems = options.filter(opt => !itemsToMoveToEnd.includes(opt));
+            const specialItems = options.filter(opt => itemsToMoveToEnd.includes(opt));
+            options = [...regularItems, ...specialItems];
 
             options.forEach(val => {
                 const wrapper = document.createElement('label');
