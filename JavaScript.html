@@ -15,7 +15,12 @@
                                                 'dropdown_mkzc6dgm': {
                                                     title: 'Grade Levels',
                                                     type: 'dropdown',
-                                                    labels: [{ name: 'Grade 1' }, { name: 'Grade 2' }, { name: 'Grade 3' }]
+                                                    labels: [
+                                                        { name: 'PreK' }, { name: 'K' }, { name: '1st Grade' }, { name: '2nd Grade' },
+                                                        { name: '3rd Grade' }, { name: '4th Grade' }, { name: '5th Grade' }, { name: '6th Grade' },
+                                                        { name: '7th Grade' }, { name: '8th Grade' }, { name: '9th Grade' }, { name: '10th Grade' },
+                                                        { name: '11th Grade' }, { name: '12th Grade' }
+                                                    ]
                                                 },
                                                 'dropdown_mkzcq8h6': {
                                                     title: 'LLN Services',
@@ -407,14 +412,22 @@
                 options = options.filter(opt => !excludedLabels.includes(opt));
 
                 // Custom sort order
+                // Updated to match lowercase "grade" from Monday.com
                 const gradeOrder = [
-                    "Pre-K", "K", "1st Grade", "2nd Grade", "3rd Grade", "4th Grade",
-                    "5th Grade", "6th Grade", "7th Grade", "8th Grade",
-                    "9th Grade", "10th Grade", "11th Grade", "12th Grade"
+                    "K", "PreK", "1st grade", "2nd grade", "3rd grade", "4th grade",
+                    "5th grade", "6th grade", "7th grade", "8th grade",
+                    "9th grade", "10th grade", "11th grade", "12th grade", "13th grade"
                 ];
 
                 options.sort((a, b) => {
-                    return gradeOrder.indexOf(a) - gradeOrder.indexOf(b);
+                    let indexA = gradeOrder.indexOf(a);
+                    let indexB = gradeOrder.indexOf(b);
+
+                    // If item is not in our list, put it at the end (safeguard)
+                    if (indexA === -1) indexA = 999;
+                    if (indexB === -1) indexB = 999;
+
+                    return indexA - indexB;
                 });
             }
 
@@ -484,7 +497,7 @@
         }
 
         // Check required checkboxes (at least one must be checked for each group)
-        const checkboxGroups = ['t_gradeLevels', 't_llnServices', 't_languages']; // Grade, Language Acquisition, and Languages are required
+        const checkboxGroups = ['t_gradeLevels', 't_languages']; // Grade and Languages are required. Language Acquisition (t_llnServices) is optional.
         for (let groupName of checkboxGroups) {
             const container = teacherRow.querySelector(`[name="${groupName}"]`);
             if (container) {
@@ -652,7 +665,11 @@
                         gradeLevels: [],
                         llnServices: [],
                         languages: [],
-                        regServices: []
+                        regServices: [],
+                        humanities: [],
+                        stem: [],
+                        sped: [],
+                        paraprofessional: []
                     };
 
                     // Collect checked checkboxes
@@ -667,6 +684,18 @@
                     });
                     row.querySelectorAll('[name="t_regServices"] input:checked').forEach(cb => {
                         teacher.regServices.push(cb.value);
+                    });
+                    row.querySelectorAll('[name="t_humanities"] input:checked').forEach(cb => {
+                        teacher.humanities.push(cb.value);
+                    });
+                    row.querySelectorAll('[name="t_stem"] input:checked').forEach(cb => {
+                        teacher.stem.push(cb.value);
+                    });
+                    row.querySelectorAll('[name="t_sped"] input:checked').forEach(cb => {
+                        teacher.sped.push(cb.value);
+                    });
+                    row.querySelectorAll('[name="t_paraprofessional"] input:checked').forEach(cb => {
+                        teacher.paraprofessional.push(cb.value);
                     });
 
                     draftData.teachers.push(teacher);
@@ -754,6 +783,22 @@
                     });
                     teacher.regServices.forEach(val => {
                         const cb = row.querySelector(`[name="t_regServices"] input[value="${val}"]`);
+                        if (cb) cb.checked = true;
+                    });
+                    teacher.humanities.forEach(val => {
+                        const cb = row.querySelector(`[name="t_humanities"] input[value="${val}"]`);
+                        if (cb) cb.checked = true;
+                    });
+                    teacher.stem.forEach(val => {
+                        const cb = row.querySelector(`[name="t_stem"] input[value="${val}"]`);
+                        if (cb) cb.checked = true;
+                    });
+                    teacher.sped.forEach(val => {
+                        const cb = row.querySelector(`[name="t_sped"] input[value="${val}"]`);
+                        if (cb) cb.checked = true;
+                    });
+                    teacher.paraprofessional.forEach(val => {
+                        const cb = row.querySelector(`[name="t_paraprofessional"] input[value="${val}"]`);
                         if (cb) cb.checked = true;
                     });
                 });
@@ -862,223 +907,181 @@
         return address && address.trim().length >= 10;
     }
 
-    // Form submission
-    document.getElementById('appForm').addEventListener('submit', async function (e) {
-        e.preventDefault();
+    // Global variable to store data pending submission
+    let pendingSubmissionData = null;
 
-        const btn = document.getElementById('submitBtn');
-
+    // Validate and Collect Data (Returns data object or throws error)
+    async function validateAndCollectData() {
         const getVal = (id) => document.getElementById(id).value;
         const getMultiVal = (containerId) => {
             const checkboxes = document.querySelectorAll(`#${containerId} input[type="checkbox"]:checked`);
             return Array.from(checkboxes).map(cb => cb.value);
         };
 
-        // Validation
+        // Validation - School Info
         const email = getVal('email');
-        const emailError = document.getElementById('emailError');
-        if (!isValidEmail(email)) {
-            document.getElementById('email').classList.add('border-red-500', 'focus:ring-red-500');
-            emailError.classList.remove('hidden');
-            document.getElementById('email').focus();
-            return;
-        } else {
-            document.getElementById('email').classList.remove('border-red-500', 'focus:ring-red-500');
-            emailError.classList.add('hidden');
-        }
+        if (!isValidEmail(email)) throw new Error("Please enter a valid email address.");
 
         const address = getVal('address');
-        const addressError = document.getElementById('addressError');
-        if (!isValidAddress(address)) {
-            document.getElementById('address').classList.add('border-red-500', 'focus:ring-red-500');
-            addressError.classList.remove('hidden');
-            document.getElementById('address').focus();
-            return;
+        if (!isValidAddress(address)) throw new Error("Please enter a valid address (at least 10 characters).");
+
+        // Teacher Data Collection
+        const isTbd = document.getElementById('tbdCheckbox').checked;
+        const teachersList = [];
+        let numberOfTeachersVal = "";
+
+        if (isTbd) {
+            numberOfTeachersVal = document.getElementById('tbdDescription').value;
+            if (!numberOfTeachersVal.trim()) throw new Error("Please describe the number of teachers (TBD).");
         } else {
-            document.getElementById('address').classList.remove('border-red-500', 'focus:ring-red-500');
-            addressError.classList.add('hidden');
+            const rows = document.querySelectorAll('.teacher-row');
+            numberOfTeachersVal = rows.length.toString();
+
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const teacherNumber = i + 1;
+                const teacherName = `Teacher ${teacherNumber}`;
+                const desc = row.querySelector('[name="t_desc"]').value;
+
+                // Collect checkboxes
+                const getTeacherCheckboxes = (containerName) => {
+                    const container = row.querySelector(`[name="${containerName}"]`);
+                    if (!container) return [];
+                    const checkboxes = container.querySelectorAll('input[type="checkbox"]:checked');
+                    return Array.from(checkboxes).map(cb => cb.value);
+                };
+
+                const gradeLevels = getTeacherCheckboxes('t_gradeLevels');
+                const llnServices = getTeacherCheckboxes('t_llnServices');
+                const languages = getTeacherCheckboxes('t_languages');
+                const regServices = getTeacherCheckboxes('t_regServices');
+                const humanities = getTeacherCheckboxes('t_humanities');
+                const stem = getTeacherCheckboxes('t_stem');
+                const sped = getTeacherCheckboxes('t_sped');
+                const paraprofessional = getTeacherCheckboxes('t_paraprofessional');
+                const startDate = row.querySelector('[name="t_startDate"]').value;
+                const lastDay = row.querySelector('[name="t_lastDay"]').value;
+                const instructionalDays = row.querySelector('[name="t_instructionalDays"]').value;
+                const modality = row.querySelector('[name="t_modality"]').value;
+                const teachingSchedule = row.querySelector('[name="t_teachingSchedule"]').value;
+                const duties = row.querySelector('[name="t_duties"]').value;
+                const annualSalary = row.querySelector('[name="t_annualSalary"]').value;
+                const proratedSalary = row.querySelector('[name="t_proratedSalary"]').value;
+                const campusName = row.querySelector('[name="t_campusName"]').value;
+                const campusAddress = row.querySelector('[name="t_campusAddress"]').value;
+
+                // Handle file upload for teacher schedule
+                const scheduleFileInput = row.querySelector('[name="t_teachingScheduleFile"]');
+                let scheduleFileName = null;
+                let scheduleMimeType = null;
+                let scheduleFileData = null;
+
+                if (scheduleFileInput && scheduleFileInput.files.length > 0) {
+                    const file = scheduleFileInput.files[0];
+                    scheduleFileName = file.name;
+                    scheduleMimeType = file.type;
+                    scheduleFileData = await readFileAsBase64(file);
+                }
+
+                // Validate Teaching Schedule (Text OR File)
+                if (!teachingSchedule.trim() && !scheduleFileName) {
+                    throw new Error(`Please provide a Teaching Schedule (Text or File) for ${teacherName}`);
+                }
+
+                // Validate teacher fields
+                if (gradeLevels.length === 0) throw new Error(`Please select at least one Grade Level for ${teacherName}`);
+                if (llnServices.length === 0) throw new Error(`Please select at least one Language Acquisition for ${teacherName}`);
+                if (languages.length === 0) throw new Error(`Please select at least one Language for ${teacherName}`);
+
+                teachersList.push({
+                    name: teacherName,
+                    teacherNumber: teacherNumber,
+                    description: desc,
+                    teachingSchedule: teachingSchedule,
+                    teachingScheduleFileName: scheduleFileName,
+                    teachingScheduleMimeType: scheduleMimeType,
+                    teachingScheduleFileData: scheduleFileData,
+                    duties: duties,
+                    annualSalary: annualSalary,
+                    proratedSalary: proratedSalary,
+                    gradeLevels: gradeLevels,
+                    llnServices: llnServices,
+                    languages: languages,
+                    regServices: regServices,
+                    humanities: humanities,
+                    stem: stem,
+                    sped: sped,
+                    paraprofessional: paraprofessional,
+                    startDate: startDate,
+                    lastDay: lastDay,
+                    instructionalDays: instructionalDays,
+                    certification: getVal('certification'),
+                    modality: modality,
+                    campusName: campusName,
+                    campusAddress: campusAddress
+                });
+            }
         }
 
-        btn.disabled = true;
-        btn.innerHTML = '<div class="loader mr-3"></div> Submitting response...';
-        btn.classList.add('opacity-75', 'cursor-not-allowed');
+        // Handle calendar (File or Text)
+        const calendarType = document.querySelector('input[name="calendarType"]:checked').value;
+        let calendarFileName = null;
+        let calendarMimeType = null;
+        let calendarFileData = null;
+        let calendarText = null;
 
-        try {
-            const isTbd = document.getElementById('tbdCheckbox').checked;
-            const teachersList = [];
-            let numberOfTeachersVal = "";
-
-            if (isTbd) {
-                numberOfTeachersVal = document.getElementById('tbdDescription').value;
+        if (calendarType === 'file') {
+            const calendarInput = document.getElementById('calendar');
+            if (calendarInput.files.length > 0) {
+                const calendarFile = calendarInput.files[0];
+                calendarFileName = calendarFile.name;
+                calendarMimeType = calendarFile.type;
+                calendarFileData = await readFileAsBase64(calendarFile);
             } else {
-                const rows = document.querySelectorAll('.teacher-row');
-                numberOfTeachersVal = rows.length.toString();
-
-                for (let i = 0; i < rows.length; i++) {
-                    const row = rows[i];
-                    const teacherNumber = i + 1;
-                    const teacherName = `Teacher ${teacherNumber}`;
-                    const desc = row.querySelector('[name="t_desc"]').value;
-
-                    // Collect checkboxes for each teacher
-                    const getTeacherCheckboxes = (containerName) => {
-                        const container = row.querySelector(`[name="${containerName}"]`);
-                        if (!container) return [];
-                        const checkboxes = container.querySelectorAll('input[type="checkbox"]:checked');
-                        return Array.from(checkboxes).map(cb => cb.value);
-                    };
-
-                    const gradeLevels = getTeacherCheckboxes('t_gradeLevels');
-                    const llnServices = getTeacherCheckboxes('t_llnServices');
-                    const languages = getTeacherCheckboxes('t_languages');
-                    const regServices = getTeacherCheckboxes('t_regServices');
-                    const startDate = row.querySelector('[name="t_startDate"]').value;
-                    const lastDay = row.querySelector('[name="t_lastDay"]').value;
-                    const instructionalDays = row.querySelector('[name="t_instructionalDays"]').value;
-                    // const certification = row.querySelector('[name="t_certification"]').value; // Removed - global now
-                    const modality = row.querySelector('[name="t_modality"]').value;
-                    const teachingSchedule = row.querySelector('[name="t_teachingSchedule"]').value;
-                    const duties = row.querySelector('[name="t_duties"]').value;
-                    const annualSalary = row.querySelector('[name="t_annualSalary"]').value;
-                    const proratedSalary = row.querySelector('[name="t_proratedSalary"]').value;
-                    const campusName = row.querySelector('[name="t_campusName"]').value;
-                    const campusAddress = row.querySelector('[name="t_campusAddress"]').value;
-
-                    // Handle file upload for teacher schedule
-                    const scheduleFileInput = row.querySelector('[name="t_teachingScheduleFile"]');
-                    let scheduleFileName = null;
-                    let scheduleMimeType = null;
-                    let scheduleFileData = null;
-
-                    if (scheduleFileInput && scheduleFileInput.files.length > 0) {
-                        const file = scheduleFileInput.files[0];
-                        scheduleFileName = file.name;
-                        scheduleMimeType = file.type;
-                        scheduleFileData = await readFileAsBase64(file);
-                    }
-
-                    // Validate Teaching Schedule (Text OR File)
-                    if (!teachingSchedule.trim() && !scheduleFileName) {
-                        showDraftToast(`Please provide a Teaching Schedule (Text or File) for ${teacherName}`, 'error', 5000);
-                        btn.disabled = false;
-                        btn.innerHTML = 'Submit Response';
-                        btn.classList.remove('opacity-75', 'cursor-not-allowed');
-                        return;
-                    }
-
-                    // Validate teacher fields
-                    if (gradeLevels.length === 0) {
-                        showDraftToast(`Please select at least one Grade Level for ${teacherName}`, 'error', 5000);
-                        btn.disabled = false;
-                        btn.innerHTML = 'Submit Response';
-                        btn.classList.remove('opacity-75', 'cursor-not-allowed');
-                        return;
-                    }
-                    if (llnServices.length === 0) {
-                        showDraftToast(`Please select at least one Language Acquisition for ${teacherName}`, 'error', 5000);
-                        btn.disabled = false;
-                        btn.innerHTML = 'Submit Response';
-                        btn.classList.remove('opacity-75', 'cursor-not-allowed');
-                        return;
-                    }
-                    if (languages.length === 0) {
-                        showDraftToast(`Please select at least one Language for ${teacherName}`, 'error', 5000);
-                        btn.disabled = false;
-                        btn.innerHTML = 'Submit Response';
-                        btn.classList.remove('opacity-75', 'cursor-not-allowed');
-                        return;
-                    }
-
-                    teachersList.push({
-                        name: teacherName,
-                        teacherNumber: teacherNumber,
-                        description: desc,
-                        teachingSchedule: teachingSchedule,
-                        teachingScheduleFileName: scheduleFileName,
-                        teachingScheduleMimeType: scheduleMimeType,
-                        teachingScheduleFileData: scheduleFileData,
-                        duties: duties,
-                        annualSalary: annualSalary,
-                        proratedSalary: proratedSalary,
-                        gradeLevels: gradeLevels,
-                        llnServices: llnServices,
-                        languages: languages,
-                        regServices: regServices,
-                        startDate: startDate,
-                        lastDay: lastDay,
-                        instructionalDays: instructionalDays,
-                        certification: getVal('certification'), // Use global certification
-                        modality: modality,
-                        campusName: campusName,
-                        campusAddress: campusAddress
-                    });
-                }
+                throw new Error("Please upload a School Calendar file or switch to Text entry.");
             }
-
-            if (isTbd) {
-                // Logic remains same
+        } else {
+            calendarText = document.getElementById('calendarText').value;
+            if (!calendarText || !calendarText.trim()) {
+                throw new Error("Please enter School Calendar text or switch to File upload.");
             }
+        }
 
-            // Handle calendar (File or Text)
-            const calendarType = document.querySelector('input[name="calendarType"]:checked').value;
-            let calendarFileName = null;
-            let calendarMimeType = null;
-            let calendarFileData = null;
-            let calendarText = null;
+        // Handle bell schedule (File or Text)
+        const bellScheduleType = document.querySelector('input[name="bellScheduleType"]:checked').value;
+        let bellScheduleFileName = null;
+        let bellScheduleMimeType = null;
+        let bellScheduleFileData = null;
+        let bellScheduleText = null;
 
-            if (calendarType === 'file') {
-                const calendarInput = document.getElementById('calendar');
-                if (calendarInput.files.length > 0) {
-                    const calendarFile = calendarInput.files[0];
-                    calendarFileName = calendarFile.name;
-                    calendarMimeType = calendarFile.type;
-                    calendarFileData = await readFileAsBase64(calendarFile);
-                } else {
-                    // Validation failed if file mode selected but no file
-                    throw new Error("Please upload a School Calendar file or switch to Text entry.");
-                }
+        if (bellScheduleType === 'file') {
+            const bellScheduleInput = document.getElementById('bellSchedule');
+            if (bellScheduleInput.files.length > 0) {
+                const bellScheduleFile = bellScheduleInput.files[0];
+                bellScheduleFileName = bellScheduleFile.name;
+                bellScheduleMimeType = bellScheduleFile.type;
+                bellScheduleFileData = await readFileAsBase64(bellScheduleFile);
             } else {
-                calendarText = document.getElementById('calendarText').value;
-                if (!calendarText || !calendarText.trim()) {
-                    throw new Error("Please enter School Calendar text or switch to File upload.");
-                }
+                throw new Error("Please upload a Bell Schedule file or switch to Text entry.");
             }
-
-            // Handle bell schedule (File or Text)
-            const bellScheduleType = document.querySelector('input[name="bellScheduleType"]:checked').value;
-            let bellScheduleFileName = null;
-            let bellScheduleMimeType = null;
-            let bellScheduleFileData = null;
-            let bellScheduleText = null;
-
-            if (bellScheduleType === 'file') {
-                const bellScheduleInput = document.getElementById('bellSchedule');
-                if (bellScheduleInput.files.length > 0) {
-                    const bellScheduleFile = bellScheduleInput.files[0];
-                    bellScheduleFileName = bellScheduleFile.name;
-                    bellScheduleMimeType = bellScheduleFile.type;
-                    bellScheduleFileData = await readFileAsBase64(bellScheduleFile);
-                } else {
-                    throw new Error("Please upload a Bell Schedule file or switch to Text entry.");
-                }
-            } else {
-                bellScheduleText = document.getElementById('bellScheduleText').value;
-                if (!bellScheduleText || !bellScheduleText.trim()) {
-                    throw new Error("Please enter Bell Schedule text or switch to File upload.");
-                }
+        } else {
+            bellScheduleText = document.getElementById('bellScheduleText').value;
+            if (!bellScheduleText || !bellScheduleText.trim()) {
+                throw new Error("Please enter Bell Schedule text or switch to File upload.");
             }
+        }
 
-            // Merge title with full name
-            const title = getVal('title');
-            const fullName = getVal('fullName');
-            const fullNameWithTitle = title ? `${title} ${fullName}` : fullName;
+        // Merge fields
+        const title = getVal('title');
+        const fullName = getVal('fullName');
+        const fullNameWithTitle = title ? `${title} ${fullName}` : fullName;
 
-            // Merge phone number with extension
-            const phoneNumber = getVal('phoneNumber');
-            const phoneExtension = getVal('phoneExtension');
-            const phoneWithExt = phoneExtension ? `${phoneNumber} ext. ${phoneExtension}` : phoneNumber;
+        const phoneNumber = getVal('phoneNumber');
+        const phoneExtension = getVal('phoneExtension');
+        const phoneWithExt = phoneExtension ? `${phoneNumber} ext. ${phoneExtension}` : phoneNumber;
 
-            const schoolData = {
+        return {
+            schoolData: {
                 schoolName: getVal('schoolName'),
                 fullName: fullNameWithTitle,
                 address: address,
@@ -1093,64 +1096,194 @@
                 calendarFileData: calendarFileData,
                 calendarText: calendarText,
                 additionalInfo: getVal('additionalInfo'),
-                calendarText: calendarText,
-                additionalInfo: getVal('additionalInfo'),
                 numberOfTeachers: numberOfTeachersVal,
-                certification: getVal('certification') // Added Global Certification
-            };
+                certification: getVal('certification')
+            },
+            teachers: teachersList
+        };
+    }
 
-            // Show loading modal
-            document.getElementById('submissionModal').classList.remove('hidden');
 
-            google.script.run
-                .withSuccessHandler((response) => {
-                    document.getElementById('submissionModal').classList.add('hidden');
-                    btn.disabled = false;
-                    btn.innerHTML = 'Submit Response';
-                    btn.classList.remove('opacity-75', 'cursor-not-allowed');
+    // Show Preview Modal
+    function showPreview(data) {
+        const previewContent = document.getElementById('previewContent');
+        let html = `
+            <div class="space-y-6">
+                <!-- School Info -->
+                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                    <h4 class="font-bold text-lg mb-2 text-brand">School Information</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                        <div><span class="font-semibold">School Name:</span> ${data.schoolData.schoolName}</div>
+                        <div><span class="font-semibold">Contact:</span> ${data.schoolData.fullName}</div>
+                        <div><span class="font-semibold">Email:</span> ${data.schoolData.email}</div>
+                        <div><span class="font-semibold">Phone:</span> ${data.schoolData.phone}</div>
+                        <div class="col-span-1 sm:col-span-2"><span class="font-semibold">Address:</span> ${data.schoolData.address}</div>
+                        <div><span class="font-semibold">Certification:</span> <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-xs">${data.schoolData.certification}</span></div>
+                    </div>
+                </div>
 
-                    if (response.success) {
-                        // Clear saved draft
-                        localStorage.removeItem('formDraft');
-                        document.getElementById('draftNotification').classList.add('hidden');
+                <!-- Schedule Info -->
+                <div class="border-t pt-4">
+                    <h4 class="font-bold text-brand mb-2">Schedules</h4>
+                    <ul class="list-disc pl-5 text-sm space-y-1">
+                        <li>
+                            <span class="font-semibold">School Calendar:</span> 
+                            ${data.schoolData.calendarFileName ? `📄 ${data.schoolData.calendarFileName}` : `📝 Text Entry`}
+                        </li>
+                        <li>
+                            <span class="font-semibold">Bell Schedule:</span> 
+                            ${data.schoolData.bellScheduleFileName ? `📄 ${data.schoolData.bellScheduleFileName}` : `📝 Text Entry`}
+                        </li>
+                    </ul>
+                </div>
+        `;
 
-                        // Hide Form and Show Success View
-                        document.getElementById('mainFormContainer').classList.add('hidden');
-                        document.getElementById('successView').classList.remove('hidden');
+        // Teachers Info
+        if (data.teachers.length > 0) {
+            html += `<div class="border-t pt-4">
+                <h4 class="font-bold text-brand mb-2">Teachers (${data.teachers.length})</h4>
+                <div class="space-y-4">`;
 
-                        // Scroll to top
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
-                })
-                .withFailureHandler((err) => {
-                    document.getElementById('submissionModal').classList.add('hidden');
-                    btn.disabled = false;
-                    btn.innerHTML = 'Submit Response';
-                    btn.classList.remove('opacity-75', 'cursor-not-allowed');
+            data.teachers.forEach((teacher, idx) => {
+                html += `
+                    <div class="border rounded p-3 text-sm">
+                        <div class="font-bold text-gray-700 dark:text-gray-300 mb-1">Teacher ${idx + 1}</div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                             <div><span class="font-semibold">Dates:</span> ${teacher.startDate} to ${teacher.lastDay}</div>
+                             <div><span class="font-semibold">Modality:</span> ${teacher.modality}</div>
+                             <div class="col-span-1 sm:col-span-2">
+                                <span class="font-semibold">Subjects:</span> 
+                                <span class="text-xs text-gray-600 dark:text-gray-400">
+                                    ${[...teacher.humanities, ...teacher.stem, ...teacher.sped, ...teacher.paraprofessional].join(', ') || 'None'}
+                                </span>
+                             </div>
+                             <div class="col-span-1 sm:col-span-2">
+                                <span class="font-semibold">Grade Levels:</span> ${teacher.gradeLevels.join(', ')}
+                             </div>
+                        </div>
+                    </div>`;
+            });
+            html += `</div></div>`;
+        } else {
+            html += `<div class="border-t pt-4 text-sm text-gray-500 italic">No teachers added (TBD: ${data.schoolData.numberOfTeachers || 'Not specified'}).</div>`;
+        }
 
-                    // Show error toast in header
-                    const errorToast = document.getElementById('errorToast');
-                    const errorMessage = document.getElementById('errorToastMessage');
-                    errorMessage.textContent = err.message || 'An unexpected error occurred.';
-                    errorToast.classList.remove('hidden');
+        // Additional Info
+        if (data.schoolData.additionalInfo) {
+            html += `
+                <div class="border-t pt-4">
+                    <h4 class="font-bold text-brand mb-1">Additional Info</h4>
+                    <p class="text-sm italic text-gray-600 dark:text-gray-400">"${data.schoolData.additionalInfo}"</p>
+                </div>`;
+        }
 
-                    // Scroll to top to ensure toast is visible
+        html += `</div>`;
+        previewContent.innerHTML = html;
+        document.getElementById('previewModal').classList.remove('hidden');
+    }
+
+    // Final Submit Handler
+    function submitFinal() {
+        if (!pendingSubmissionData) return;
+
+        const btn = document.getElementById('submitBtn'); // The main form button
+        const confirmBtn = document.getElementById('confirmSubmitBtn');
+
+        // Hide preview modal
+        document.getElementById('previewModal').classList.add('hidden');
+
+        // Show loading modal
+        document.getElementById('submissionModal').classList.remove('hidden');
+
+        // Disable confirm button to prevent double clicks
+        confirmBtn.disabled = true;
+
+        google.script.run
+            .withSuccessHandler((response) => {
+                document.getElementById('submissionModal').classList.add('hidden');
+                confirmBtn.disabled = false;
+                btn.disabled = false;
+                btn.innerHTML = 'Submit Response';
+                btn.classList.remove('opacity-75', 'cursor-not-allowed');
+
+                if (response.success) {
+                    // Clear saved draft
+                    localStorage.removeItem('formDraft');
+                    document.getElementById('draftNotification').classList.add('hidden');
+
+                    // Hide Form and Show Success View
+                    document.getElementById('mainFormContainer').classList.add('hidden');
+                    document.getElementById('successView').classList.remove('hidden');
+
+                    // Scroll to top
                     window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            })
+            .withFailureHandler((err) => {
+                document.getElementById('submissionModal').classList.add('hidden');
+                confirmBtn.disabled = false;
+                btn.disabled = false;
+                btn.innerHTML = 'Submit Response';
+                btn.classList.remove('opacity-75', 'cursor-not-allowed');
 
-                    // Hide toast after 7 seconds (longer for errors)
-                    setTimeout(() => {
-                        errorToast.classList.add('hidden');
-                    }, 7000);
-                })
-                .processApplication({ schoolData, teachers: teachersList });
+                // Show error toast in header
+                const errorToast = document.getElementById('errorToast');
+                const errorMessage = document.getElementById('errorToastMessage');
+                errorMessage.textContent = err.message || 'An unexpected error occurred.';
+                errorToast.classList.remove('hidden');
+
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                setTimeout(() => {
+                    errorToast.classList.add('hidden');
+                }, 7000);
+            })
+            .processApplication(pendingSubmissionData);
+    }
+
+    // Attach event listener to confirm button
+    document.getElementById('confirmSubmitBtn').addEventListener('click', submitFinal);
+
+
+    // Form submission
+    document.getElementById('appForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<div class="loader mr-3"></div> Validating...';
+        btn.classList.add('opacity-75', 'cursor-not-allowed');
+
+        try {
+            // 1. Validate and Collect Data
+            const data = await validateAndCollectData();
+
+            // 2. Store data globally
+            pendingSubmissionData = data;
+
+            // 3. Reset button state (since we are just showing preview)
+            btn.disabled = false;
+            btn.innerHTML = 'Submit Response';
+            btn.classList.remove('opacity-75', 'cursor-not-allowed');
+
+            // 4. Show Preview
+            showPreview(data);
 
         } catch (error) {
-            document.getElementById('submissionModal').classList.add('hidden');
             console.error(error);
             btn.disabled = false;
             btn.innerHTML = 'Submit Response';
             btn.classList.remove('opacity-75', 'cursor-not-allowed');
-            alert("Client Error: " + error.message);
+
+            // Show error toast
+            const errorToast = document.getElementById('errorToast');
+            const errorMessage = document.getElementById('errorToastMessage');
+            errorMessage.textContent = error.message;
+            errorToast.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(() => {
+                errorToast.classList.add('hidden');
+            }, 7000);
         }
     });
 
