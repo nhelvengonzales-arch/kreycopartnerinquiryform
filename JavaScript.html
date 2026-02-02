@@ -345,12 +345,10 @@
             // Get all option values
             let optionValues = options.map(opt => opt.name || opt);
 
-            // Custom sorting: move "Both options are fine." to the end for Modality
+            // Custom sorting/filtering: Remove "Both options are fine." for Modality
             if (columnId === 'color_mkzcn0h2') { // Modality column
-                const itemsToMoveToEnd = ['Both options are fine.'];
-                const regularItems = optionValues.filter(opt => !itemsToMoveToEnd.includes(opt));
-                const specialItems = optionValues.filter(opt => itemsToMoveToEnd.includes(opt));
-                optionValues = [...regularItems, ...specialItems];
+                const excludedOptions = ['Both options are fine.'];
+                optionValues = optionValues.filter(opt => !excludedOptions.includes(opt));
             }
 
             // Render sorted options
