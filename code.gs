@@ -529,8 +529,8 @@ function createSubitem(parentId, teacher) {
   if (teacher.gradeLevels && teacher.gradeLevels.length > 0) {
     columnValues["dropdown_mkzc6dgm"] = { labels: teacher.gradeLevels };
   }
-  if (teacher.llnServices && teacher.llnServices.length > 0) {
-    columnValues["dropdown_mkzcq8h6"] = { labels: teacher.llnServices };
+  if (teacher.languageAcquisition && teacher.languageAcquisition.length > 0) {
+    columnValues["dropdown_mkzcq8h6"] = { labels: teacher.languageAcquisition };
   }
 
   if (teacher.humanities && teacher.humanities.length > 0) {
@@ -743,7 +743,7 @@ function generateSubmissionPDF(schoolData, teachers, parentId, mainFolder, submi
           ${teacher.duties ? `<div class="teacher-row"><span class="t-label">Duties</span><span class="t-value">${escapeHtml(teacher.duties)}</span></div>` : ''}
           ${teacher.gradeLevels && teacher.gradeLevels.length > 0 ? `<div class="teacher-row"><span class="t-label">Grades</span><span class="t-value">${escapeHtml(teacher.gradeLevels.join(', '))}</span></div>` : ''}
           ${teacher.languages && teacher.languages.length > 0 ? `<div class="teacher-row"><span class="t-label">Languages</span><span class="t-value">${escapeHtml(teacher.languages.join(', '))}</span></div>` : ''}
-          ${teacher.llnServices && teacher.llnServices.length > 0 ? `<div class="teacher-row"><span class="t-label">Language Acquisition</span><span class="t-value">${escapeHtml(teacher.llnServices.join(', '))}</span></div>` : ''}
+          ${teacher.languageAcquisition && teacher.languageAcquisition.length > 0 ? `<div class="teacher-row"><span class="t-label">Language Acquisition</span><span class="t-value">${escapeHtml(teacher.languageAcquisition.join(', '))}</span></div>` : ''}
           ${teacher.humanities && teacher.humanities.length > 0 ? `<div class="teacher-row"><span class="t-label">Humanities</span><span class="t-value">${escapeHtml(teacher.humanities.join(', '))}</span></div>` : ''}
           ${teacher.stem && teacher.stem.length > 0 ? `<div class="teacher-row"><span class="t-label">STEM</span><span class="t-value">${escapeHtml(teacher.stem.join(', '))}</span></div>` : ''}
           ${teacher.sped && teacher.sped.length > 0 ? `<div class="teacher-row"><span class="t-label">SPED</span><span class="t-value">${escapeHtml(teacher.sped.join(', '))}</span></div>` : ''}

@@ -23,7 +23,7 @@
                                                     ]
                                                 },
                                                 'dropdown_mkzcq8h6': {
-                                                    title: 'LLN Services',
+                                                    title: 'Language Acquisition',
                                                     type: 'dropdown',
                                                     labels: [{ name: 'Special Education' }, { name: 'Speech Therapy' }]
                                                 },
@@ -383,7 +383,7 @@
             // Using parent board column IDs (these exist and have the data)
             renderTeacherCheckboxes(row.querySelector('[name="t_gradeLevels"]'), 'dropdown_mkzc6dgm', globalDropdownOptions);
             renderTeacherCheckboxes(row.querySelector('[name="t_languages"]'), 'dropdown_mkzcbcq4', globalDropdownOptions); // Added Languages
-            renderTeacherCheckboxes(row.querySelector('[name="t_llnServices"]'), 'dropdown_mkzcq8h6', globalDropdownOptions);
+            renderTeacherCheckboxes(row.querySelector('[name="t_languageAcquisition"]'), 'dropdown_mkzcq8h6', globalDropdownOptions);
             renderTeacherCheckboxes(row.querySelector('[name="t_humanities"]'), 'dropdown_mm02xrpn', globalDropdownOptions);
             renderTeacherCheckboxes(row.querySelector('[name="t_stem"]'), 'dropdown_mm02azn5', globalDropdownOptions);
             renderTeacherCheckboxes(row.querySelector('[name="t_sped"]'), 'dropdown_mm02m53x', globalDropdownOptions);
@@ -497,7 +497,7 @@
         }
 
         // Check required checkboxes (at least one must be checked for each group)
-        const checkboxGroups = ['t_gradeLevels', 't_languages']; // Grade and Languages are required. Language Acquisition (t_llnServices) is optional.
+        const checkboxGroups = ['t_gradeLevels', 't_languages']; // Grade and Languages are required. Language Acquisition (t_languageAcquisition) is optional.
         for (let groupName of checkboxGroups) {
             const container = teacherRow.querySelector(`[name="${groupName}"]`);
             if (container) {
@@ -568,7 +568,7 @@
         if (globalDropdownOptions && newRow) {
             renderTeacherCheckboxes(newRow.querySelector('[name="t_gradeLevels"]'), 'dropdown_mkzc6dgm', globalDropdownOptions);
             renderTeacherCheckboxes(newRow.querySelector('[name="t_languages"]'), 'dropdown_mkzcbcq4', globalDropdownOptions); // Added Languages
-            renderTeacherCheckboxes(newRow.querySelector('[name="t_llnServices"]'), 'dropdown_mkzcq8h6', globalDropdownOptions);
+            renderTeacherCheckboxes(newRow.querySelector('[name="t_languageAcquisition"]'), 'dropdown_mkzcq8h6', globalDropdownOptions);
             // renderTeacherCheckboxes(newRow.querySelector('[name="t_regServices"]'), 'dropdown_mkt6gc13', globalDropdownOptions); // Removed regServices
             renderTeacherCheckboxes(newRow.querySelector('[name="t_humanities"]'), 'dropdown_mm02xrpn', globalDropdownOptions);
             renderTeacherCheckboxes(newRow.querySelector('[name="t_stem"]'), 'dropdown_mm02azn5', globalDropdownOptions);
@@ -663,7 +663,7 @@
                         // certification: row.querySelector('[name="t_certification"]').value, // Removed from teacher row
                         modality: row.querySelector('[name="t_modality"]').value,
                         gradeLevels: [],
-                        llnServices: [],
+                        languageAcquisition: [],
                         languages: [],
                         regServices: [],
                         humanities: [],
@@ -676,8 +676,8 @@
                     row.querySelectorAll('[name="t_gradeLevels"] input:checked').forEach(cb => {
                         teacher.gradeLevels.push(cb.value);
                     });
-                    row.querySelectorAll('[name="t_llnServices"] input:checked').forEach(cb => {
-                        teacher.llnServices.push(cb.value);
+                    row.querySelectorAll('[name="t_languageAcquisition"] input:checked').forEach(cb => {
+                        teacher.languageAcquisition.push(cb.value);
                     });
                     row.querySelectorAll('[name="t_languages"] input:checked').forEach(cb => {
                         teacher.languages.push(cb.value);
@@ -773,8 +773,8 @@
                         const cb = row.querySelector(`[name="t_gradeLevels"] input[value="${val}"]`);
                         if (cb) cb.checked = true;
                     });
-                    teacher.llnServices.forEach(val => {
-                        const cb = row.querySelector(`[name="t_llnServices"] input[value="${val}"]`);
+                    teacher.languageAcquisition.forEach(val => {
+                        const cb = row.querySelector(`[name="t_languageAcquisition"] input[value="${val}"]`);
                         if (cb) cb.checked = true;
                     });
                     teacher.languages.forEach(val => {
@@ -952,7 +952,7 @@
                 };
 
                 const gradeLevels = getTeacherCheckboxes('t_gradeLevels');
-                const llnServices = getTeacherCheckboxes('t_llnServices');
+                const languageAcquisition = getTeacherCheckboxes('t_languageAcquisition');
                 const languages = getTeacherCheckboxes('t_languages');
                 const regServices = getTeacherCheckboxes('t_regServices');
                 const humanities = getTeacherCheckboxes('t_humanities');
@@ -1004,7 +1004,7 @@
                     annualSalary: annualSalary,
                     proratedSalary: proratedSalary,
                     gradeLevels: gradeLevels,
-                    llnServices: llnServices,
+                    languageAcquisition: languageAcquisition,
                     languages: languages,
                     regServices: regServices,
                     humanities: humanities,
