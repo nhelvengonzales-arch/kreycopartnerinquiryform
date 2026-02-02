@@ -42,7 +42,7 @@
                                                     type: 'color',
                                                     labels: [{ name: 'Certified' }, { name: 'Pending Certification' }]
                                                 },
-                                                'status__1': {
+                                                'color_mkzcn0h2': {
                                                     title: 'Modality',
                                                     type: 'status',
                                                     labels: [{ name: 'In Person' }, { name: 'Online' }, { name: 'Hybrid' }]
@@ -308,7 +308,7 @@
             let optionValues = options.map(opt => opt.name || opt);
 
             // Custom sorting: move "Both Options are fine." to the end for Modality
-            if (elementId.includes('modality')) {
+            if (elementId.includes('modality') || columnId === 'color_mkzcn0h2') {
                 const itemsToMoveToEnd = ['Both Options are fine.'];
                 const regularItems = optionValues.filter(opt => !itemsToMoveToEnd.includes(opt));
                 const specialItems = optionValues.filter(opt => itemsToMoveToEnd.includes(opt));
@@ -346,7 +346,7 @@
             let optionValues = options.map(opt => opt.name || opt);
 
             // Custom sorting: move "Both options are fine." to the end for Modality
-            if (columnId === 'status__1') { // Modality column
+            if (columnId === 'color_mkzcn0h2') { // Modality column
                 const itemsToMoveToEnd = ['Both options are fine.'];
                 const regularItems = optionValues.filter(opt => !itemsToMoveToEnd.includes(opt));
                 const specialItems = optionValues.filter(opt => itemsToMoveToEnd.includes(opt));
@@ -390,7 +390,7 @@
             renderTeacherCheckboxes(row.querySelector('[name="t_paraprofessional"]'), 'dropdown_mm02v870', globalDropdownOptions);
 
             // Populate status dropdowns (Modality) - Certification is now global
-            fillTeacherSelect(row.querySelector('[name="t_modality"]'), 'status__1', globalDropdownOptions);
+            fillTeacherSelect(row.querySelector('[name="t_modality"]'), 'color_mkzcn0h2', globalDropdownOptions);
         });
     }
     // Render checkboxes for teacher fields
@@ -575,7 +575,7 @@
             renderTeacherCheckboxes(newRow.querySelector('[name="t_sped"]'), 'dropdown_mm02m53x', globalDropdownOptions);
             renderTeacherCheckboxes(newRow.querySelector('[name="t_paraprofessional"]'), 'dropdown_mm02v870', globalDropdownOptions);
 
-            fillTeacherSelect(newRow.querySelector('[name="t_modality"]'), 'status__1', globalDropdownOptions);
+            fillTeacherSelect(newRow.querySelector('[name="t_modality"]'), 'color_mkzcn0h2', globalDropdownOptions);
         }
 
         // Add focus listener to collapse School Info when teacher fields are focused

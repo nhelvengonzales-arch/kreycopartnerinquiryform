@@ -74,8 +74,7 @@ function getBoardDropdownOptions() {
     query {
       boards (ids: ${config.boardId}) {
         columns (ids: [
-          "color_mksnhewa",     # Certification (status column)
-          "status__1"           # Modality Preference (status column)
+          "color_mksnhewa"     # Certification (status column)
         ]) {
           id
           title
@@ -96,6 +95,7 @@ function getBoardDropdownOptions() {
               board {
                 columns (ids: [
                   "dropdown_mkzc6dgm",  # Grade Levels
+                  "color_mkzcn0h2",     # Modality Preference (moved to subitems)
                   "dropdown_mm02xrpn",  # Humanities
                   "dropdown_mm02azn5",  # STEM
                   "dropdown_mm02m53x",  # SPED

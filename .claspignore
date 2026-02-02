@@ -1,9 +1,10 @@
-Preview Folder/**
-Preview*
-*.py
-*.md
-.vscode
 .git
-task.md
-implementation_plan.md
-walkthrough.md
+.gitignore
+node_modules
+**/**/node_modules/**
+package.json
+package-lock.json
+.clasp.json
+*.md
+assemble_preview.py
+build_preview.py
